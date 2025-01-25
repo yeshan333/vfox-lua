@@ -1,0 +1,71 @@
+name: E2E tests
+
+on:
+  # push:
+  #   branches: [main]
+  # pull_request:
+  workflow_dispatch:
+
+jobs:
+  e2e_tests:
+    strategy:
+      matrix:
+        # ref: https://github.com/actions/runner-images
+        os: [ubuntu-20.04, macos-13, windows-2022]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install vfox (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          echo "deb [trusted=yes] https://apt.fury.io/versionfox/ /" | sudo tee /etc/apt/sources.list.d/versionfox.list
+          sudo apt-get update
+          sudo apt-get install vfox
+      
+      - name: install vfox (MacOS)
+        if: runner.os == 'MacOS'
+        run: |
+          brew tap version-fox/tap
+          brew install vfox
+
+      - name: install scoop (Windows)
+        if: runner.os == 'Windows'
+        uses: MinoruSekine/setup-scoop@v3
+
+      - name: install vfox (Windows)      
+        if: runner.os == 'Windows'
+        run: |
+          scoop install vfox
+
+      - name: add vfox-lua plugin
+        if: runner.os == 'Windows'
+        run: |
+          vfox add --source https://github.com/yeshan333/vfox-lua/archive/$env:GITHUB_REF.zip lua
+
+      - name: add vfox-lua plugin
+        if: runner.os != 'Windows'
+        run: |
+          vfox add --source https://github.com/yeshan333/vfox-lua/archive/${GITHUB_REF}.zip lua
+
+      - name: install lua by vfox-lua plugin (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          vfox install lua@5.4.7
+          vfox use -g lua@5.4.7
+          eval "$(vfox activate bash)"
+          echo "===============PATH==============="
+          echo $PATH
+          echo "===============PATH==============="
+          lua -v
+
+      - name: install lua by vfox-lua plugin (Darwin)
+        if: runner.os == 'MacOS'
+        run: |
+          vfox install lua@5.4.7
+          vfox use -g lua@5.4.7
+          eval "$(vfox activate bash)"
+          echo "===============PATH==============="
+          echo $PATH
+          echo "===============PATH==============="
+          lua -v
