@@ -7,7 +7,7 @@ local Utils = require("utils")
 --- @return table Version information
 function PLUGIN:PreInstall(ctx)
     local lua_version = ctx.version
-    local file, download_url
+    local download_url
 
     local v, checksum = Utils.get_version_info(lua_version)
     if not v then
