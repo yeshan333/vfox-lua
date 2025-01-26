@@ -65,7 +65,7 @@ jobs:
           LUA_VERSION: ${{ matrix.lua_version }}
         run: |
           vfox install lua@$LUA_VERSION
-          vfox use -g lua@@$LUA_VERSION
+          vfox use -g lua@$LUA_VERSION
           eval "$(vfox activate bash)"
           echo "===============PATH==============="
           echo $PATH
