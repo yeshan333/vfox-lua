@@ -12,6 +12,7 @@ jobs:
       matrix:
         # ref: https://github.com/actions/runner-images
         os: [ubuntu-20.04, macos-13]
+        lua_version: [5.4.7, 5.3.5]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -42,33 +43,33 @@ jobs:
       - name: install lua by vfox-lua plugin (Linux)
         if: runner.os == 'Linux'
         run: |
-          vfox install lua@5.4.7
-          vfox use -g lua@5.4.7
+          vfox install lua@${{ matrix.lua_version }}
+          vfox use -g lua@${{ matrix.lua_version }}
           eval "$(vfox activate bash)"
           echo "===============PATH==============="
           echo $PATH
           echo "===============PATH==============="
-          status=$(lua -v | grep 5.4.7)
+          status=$(lua -v | grep ${{ matrix.lua_version }} }})
           if [ -z "$status" ]; then
-            echo "Lua version is not 5.4.7"
+            echo "Lua version is not ${{ matrix.lua_version }}}}"
             exit 1
           else
-            echo "Lua version 5.4.7 installed successfully"
+            echo "Lua version ${{ matrix.lua_version }} }} installed successfully"
           fi
 
       - name: install lua by vfox-lua plugin (Darwin)
         if: runner.os == 'MacOS'
         run: |
-          vfox install lua@5.4.7
-          vfox use -g lua@5.4.7
+          vfox install lua@${{ matrix.lua_version }}
+          vfox use -g lua@${{ matrix.lua_version }}
           eval "$(vfox activate bash)"
           echo "===============PATH==============="
           echo $PATH
           echo "===============PATH==============="
-          status=$(lua -v | grep 5.4.7)
+          status=$(lua -v | grep ${{ matrix.lua_version }} }})
           if [ -z "$status" ]; then
-            echo "Lua version is not 5.4.7"
+            echo "Lua version is not ${{ matrix.lua_version }}}}"
             exit 1
           else
-            echo "Lua version 5.4.7 installed successfully"
+            echo "Lua version ${{ matrix.lua_version }} }} installed successfully"
           fi
