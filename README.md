@@ -2,6 +2,8 @@
 
 ![logo](./assets/vfox-lua-logo.png)
 
+[![E2E tests](https://github.com/yeshan333/vfox-lua/actions/workflows/e2e_test.yaml/badge.svg)](https://github.com/yeshan333/vfox-lua/actions/workflows/e2e_test.yaml)
+
 </div>
 
 # vfox-lua plugin
