@@ -11,7 +11,7 @@ jobs:
     strategy:
       matrix:
         # ref: https://github.com/actions/runner-images
-        os: [ubuntu-20.04, macos-13, windows-2022]
+        os: [ubuntu-20.04, macos-13]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -28,15 +28,6 @@ jobs:
         run: |
           brew tap version-fox/tap
           brew install vfox
-
-      - name: install scoop (Windows)
-        if: runner.os == 'Windows'
-        uses: MinoruSekine/setup-scoop@v3
-
-      - name: install vfox (Windows)      
-        if: runner.os == 'Windows'
-        run: |
-          scoop install vfox
 
       - name: add vfox-lua plugin
         if: runner.os == 'Windows'
@@ -57,7 +48,11 @@ jobs:
           echo "===============PATH==============="
           echo $PATH
           echo "===============PATH==============="
-          lua -v
+          status=$(lua -v | grep 5.4.7)
+          if [ -z "$status" ]; then
+            echo "Lua version is not 5.4.4"
+            exit 1
+          fi
 
       - name: install lua by vfox-lua plugin (Darwin)
         if: runner.os == 'MacOS'
@@ -68,4 +63,8 @@ jobs:
           echo "===============PATH==============="
           echo $PATH
           echo "===============PATH==============="
-          lua -v
+          status=$(lua -v | grep 5.4.7)
+          if [ -z "$status" ]; then
+            echo "Lua version is not 5.4.4"
+            exit 1
+          fi
