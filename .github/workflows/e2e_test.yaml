@@ -1,9 +1,9 @@
 name: E2E tests
 
 on:
-  # push:
-  #   branches: [main]
-  # pull_request:
+  push:
+    branches: [main]
+  pull_request:
   workflow_dispatch:
 
 jobs:
@@ -42,34 +42,38 @@ jobs:
 
       - name: install lua by vfox-lua plugin (Linux)
         if: runner.os == 'Linux'
+        env:
+          LUA_VERSION: ${{ matrix.lua_version }}
         run: |
-          vfox install lua@${{ matrix.lua_version }}
-          vfox use -g lua@${{ matrix.lua_version }}
+          vfox install lua@$LUA_VERSION
+          vfox use -g lua@$LUA_VERSION
           eval "$(vfox activate bash)"
           echo "===============PATH==============="
           echo $PATH
           echo "===============PATH==============="
-          status=$(lua -v | grep ${{ matrix.lua_version }} }})
+          status=$(lua -v | grep $LUA_VERSION)
           if [ -z "$status" ]; then
-            echo "Lua version is not ${{ matrix.lua_version }}}}"
+            echo "Lua version is not $LUA_VERSION"
             exit 1
           else
-            echo "Lua version ${{ matrix.lua_version }} }} installed successfully"
+            echo "Lua version $LUA_VERSION installed successfully"
           fi
 
       - name: install lua by vfox-lua plugin (Darwin)
         if: runner.os == 'MacOS'
+        env:
+          LUA_VERSION: ${{ matrix.lua_version }}
         run: |
-          vfox install lua@${{ matrix.lua_version }}
-          vfox use -g lua@${{ matrix.lua_version }}
+          vfox install lua@$LUA_VERSION
+          vfox use -g lua@@$LUA_VERSION
           eval "$(vfox activate bash)"
           echo "===============PATH==============="
           echo $PATH
           echo "===============PATH==============="
-          status=$(lua -v | grep ${{ matrix.lua_version }} }})
+          status=$(lua -v | grep $LUA_VERSION)
           if [ -z "$status" ]; then
-            echo "Lua version is not ${{ matrix.lua_version }}}}"
+            echo "Lua version is not @$LUA_VERSION"
             exit 1
           else
-            echo "Lua version ${{ matrix.lua_version }} }} installed successfully"
+            echo "Lua version $LUA_VERSION installed successfully"
           fi
