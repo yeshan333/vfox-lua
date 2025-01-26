@@ -5,7 +5,7 @@ local lua_utils = {}
 function lua_utils.get_lua_release_verions()
     local result = {}
     local resp, err = http.get({
-        url = "http://localhost:3000/versions.txt"
+        url = "https://fastly.jsdelivr.net/gh/yeshan333/vfox-lua@main/assets/versions.txt"
     })
     for line in string.gmatch(resp.body, '([^\n]+)') do
         local version, checksum = string.match(line, "([^,]+),([^,]+)")
@@ -21,7 +21,7 @@ end
 
 function lua_utils.get_version_info(lua_version)
     local resp, err = http.get({
-        url = "http://localhost:3000/versions.txt"
+        url = "https://fastly.jsdelivr.net/gh/yeshan333/vfox-lua@main/assets/versions.txt"
     })
     for line in string.gmatch(resp.body, '([^\n]+)') do
         local version, checksum = string.match(line, "([^,]+),([^,]+)")
