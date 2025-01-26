@@ -50,8 +50,10 @@ jobs:
           echo "===============PATH==============="
           status=$(lua -v | grep 5.4.7)
           if [ -z "$status" ]; then
-            echo "Lua version is not 5.4.4"
+            echo "Lua version is not 5.4.7"
             exit 1
+          else
+            echo "Lua version 5.4.7 installed successfully"
           fi
 
       - name: install lua by vfox-lua plugin (Darwin)
@@ -65,6 +67,8 @@ jobs:
           echo "===============PATH==============="
           status=$(lua -v | grep 5.4.7)
           if [ -z "$status" ]; then
-            echo "Lua version is not 5.4.4"
+            echo "Lua version is not 5.4.7"
             exit 1
+          else
+            echo "Lua version 5.4.7 installed successfully"
           fi
