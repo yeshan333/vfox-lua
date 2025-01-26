@@ -2,3 +2,4 @@
 .tool-versions
 __pycache__
 available.cache
+.vscode
