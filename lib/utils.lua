@@ -9,7 +9,6 @@ function lua_utils.get_lua_release_verions()
     })
     for line in string.gmatch(resp.body, '([^\n]+)') do
         local version, checksum = string.match(line, "([^,]+),([^,]+)")
-        print(version)
         table.insert(result, {
             version = version,
             checksum = checksum
