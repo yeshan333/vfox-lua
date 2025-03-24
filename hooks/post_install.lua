@@ -140,8 +140,8 @@ function PLUGIN:PostInstall(ctx)
     output:write(modified_content)
     output:close()
 
+
     local cmd = string.format(
-    -- "powershell -Command cd %s\\src; $env:PATH = '%s;%s;%s'; Write-Output ''; $env:PATH; Write-Output ''",
       "powershell -Command cd %s\\src; $env:PATH = '%s;%s;%s'; make %s  INSTALL_TOP=%s;",
       path,
       msys_root .. "usr\\bin",
