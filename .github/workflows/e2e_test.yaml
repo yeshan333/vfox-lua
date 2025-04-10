@@ -107,7 +107,7 @@ jobs:
       - name: install Lua by vfox-lua plugin (Windows)
         if: runner.os == 'Windows'
         env:
-          LUA_VERSION: ${{ matrix.lua_version }}
+          LUA_VERSION: "${{ matrix.lua_version }}"
         run: |
           vfox install lua@$env:LUA_VERSION
           vfox use -g lua@$env:LUA_VERSION
