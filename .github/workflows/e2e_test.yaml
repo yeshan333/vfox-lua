@@ -113,7 +113,8 @@ jobs:
           echo "===============PATH==============="
           echo $env:PATH
           echo "===============PATH==============="
-          $result = lua -v
+          Invoke-Expression "$(vfox activate pwsh)"
+          $result = lua.exe -v
           if ($result -match "Lua 5.4.7") {
               Write-Output "lua@5.4.7 installed successfully!"
           } else {

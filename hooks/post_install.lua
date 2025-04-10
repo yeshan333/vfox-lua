@@ -28,7 +28,7 @@ function PLUGIN:PostInstall(ctx)
     -- use ENV OTP_COMPILE_ARGS to control compile behavior
     local sdkInfo = ctx.sdkInfo['lua']
     local path = sdkInfo.path
-    local normalizedPath = string.gsub(path, "\\", "\\\\")
+    local normalizedPath = string.gsub(path, "\\", "/")
     local lua_version = sdkInfo.version
     print(string.format("os type: %s, lua installed path: %s", RUNTIME.osType, path))
 
