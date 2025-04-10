@@ -11,7 +11,7 @@ jobs:
     strategy:
       matrix:
         # ref: https://github.com/actions/runner-images
-        os: [ubuntu-20.04, macos-13]
+        os: [ubuntu-22.04, macos-13, windows-latest]
         lua_version: [5.4.7, 5.3.5]
     runs-on: ${{ matrix.os }}
     steps:
@@ -29,6 +29,15 @@ jobs:
         run: |
           brew tap version-fox/tap
           brew install vfox
+
+      - name: install scoop (Windows)
+        if: runner.os == 'Windows'
+        uses: MinoruSekine/setup-scoop@v3
+    
+      - name: install vfox (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          scoop install vfox
 
       - name: add vfox-lua plugin
         if: runner.os == 'Windows'
@@ -77,3 +86,37 @@ jobs:
           else
             echo "Lua version $LUA_VERSION installed successfully"
           fi
+
+      - name: Setup MSYS2 (Windows)
+        uses: msys2/setup-msys2@v2
+        if: runner.os == 'Windows'
+        with:
+          msystem: MINGW64
+          update: true
+          install: >
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-make
+
+      - name: Verify GCC and Make installation (Windows)
+        shell: powershell
+        if: runner.os == 'Windows'
+        run: |
+          gcc --version
+          make --version
+
+      - name: install Lua by vfox-lua plugin (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          vfox install lua@5.4.7
+          vfox use -g lua@5.4.7
+          Invoke-Expression "$(vfox activate pwsh)"
+          echo "===============PATH==============="
+          echo $env:PATH
+          echo "===============PATH==============="
+          $result = lua -v
+          if ($result -match "Lua 5.4.7") {
+              Write-Output "lua@5.4.7 installed successfully!"
+          } else {
+              Write-Output "lua@5.4.7 installed failed!"
+              exit 1
+          }

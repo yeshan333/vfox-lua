@@ -33,10 +33,10 @@ function PLUGIN:PostInstall(ctx)
     local lua_version = sdkInfo.version
     print("lua installed path: " .. path)
 
+    CheckBuildTools(RUNTIME.osType)
     -- TODO: support install luajit
     local status
     if RUNTIME.osType == "windows" then
-        CheckBuildTools(RUNTIME.osType)
         local cmd = string.format(
             "powershell -Command cd %s; make mingw;",
             path
@@ -50,7 +50,6 @@ function PLUGIN:PostInstall(ctx)
         )
         status = os.execute(cmd)
     elseif RUNTIME.osType == "linux" then
-        -- BUG: need lua5.4
         if lua_version > "5.4" then
             local install_cmd1 = "cd " .. path .. " && make linux-readline " ..
                 "INSTALL_TOP=" .. path
