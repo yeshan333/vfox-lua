@@ -12,8 +12,12 @@ lua [vfox](https://github.com/version-fox) plugin. Use the vfox to manage multip
 
 ## Requirements
 
-- GNU Make
-- ANSI C compiler (like gcc).
+- MacOS/Linux (you can install by apt or homebrew)
+  - GNU Make
+  - ANSI C compiler (like gcc)
+- Windows (you can install by [msys2](https://www.msys2.org/))
+  - GCC Compiler
+  - Make
 
 ## Usage
 

@@ -106,18 +106,20 @@ jobs:
 
       - name: install Lua by vfox-lua plugin (Windows)
         if: runner.os == 'Windows'
+        env:
+          LUA_VERSION: ${{ matrix.lua_version }}
         run: |
-          vfox install lua@5.4.7
-          vfox use -g lua@5.4.7
+          vfox install lua@$env:LUA_VERSION
+          vfox use -g lua@$env:LUA_VERSION
           Invoke-Expression "$(vfox activate pwsh)"
           echo "===============PATH==============="
           echo $env:PATH
           echo "===============PATH==============="
           Invoke-Expression "$(vfox activate pwsh)"
           $result = lua.exe -v
-          if ($result -match "Lua 5.4.7") {
-              Write-Output "lua@5.4.7 installed successfully!"
+          if ($result -match "Lua @$env:LUA_VERSION") {
+              Write-Output "lua@$env:LUA_VERSION installed successfully!"
           } else {
-              Write-Output "lua@5.4.7 installed failed!"
+              Write-Output "lua@$env:LUA_VERSION installed failed!"
               exit 1
           }
