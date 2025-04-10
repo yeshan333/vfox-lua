@@ -1,7 +1,6 @@
 --- Extension point, called after PreInstall, can perform additional operations,
 --- such as file operations for the SDK installation directory or compile source code
 function CheckBuildTools(osType)
-
     if osType == "windows" then
         local makeCheckCmd = "powershell -Command Get-Command make.exe"
         local makeInstalledStatus = os.execute(makeCheckCmd)
@@ -31,7 +30,7 @@ function PLUGIN:PostInstall(ctx)
     local path = sdkInfo.path
     local normalizedPath = string.gsub(path, "\\", "\\\\")
     local lua_version = sdkInfo.version
-    print("lua installed path: " .. path)
+    print(string.format("os type: %s, lua installed path: %s", RUNTIME.osType, path))
 
     CheckBuildTools(RUNTIME.osType)
     -- TODO: support install luajit
