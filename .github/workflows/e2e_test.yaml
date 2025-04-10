@@ -12,7 +12,7 @@ jobs:
       matrix:
         # ref: https://github.com/actions/runner-images
         os: [ubuntu-22.04, macos-13, windows-latest]
-        lua_version: [5.4.7, 5.3.5]
+        lua_version: [5.4.7, 5.3.6, 5.1.5]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -109,8 +109,8 @@ jobs:
         env:
           LUA_VERSION: "${{ matrix.lua_version }}"
         run: |
-          vfox install lua@$env:LUA_VERSION
-          vfox use -g lua@$env:LUA_VERSION
+          vfox install "lua@$env:LUA_VERSION"
+          vfox use -g "lua@$env:LUA_VERSION"
           Invoke-Expression "$(vfox activate pwsh)"
           echo "===============PATH==============="
           echo $env:PATH
