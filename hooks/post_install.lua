@@ -16,7 +16,7 @@ pacman -Syu
 pacman -S make
 pacman -S --needed base-devel mingw-w64-x86_64-toolchain
 
-Make sure mame.exe and gcc.exe are in the System PATH.
+Make sure make.exe and gcc.exe are in the System $env:PATH in PowerShell.
             ]])
         end
     end
