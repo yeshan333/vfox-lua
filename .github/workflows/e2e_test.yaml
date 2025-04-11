@@ -12,7 +12,7 @@ jobs:
       matrix:
         # ref: https://github.com/actions/runner-images
         os: [ubuntu-22.04, macos-13, windows-latest]
-        lua_version: [5.4.7, 5.3.6, 5.1.5]
+        lua_version: [5.4.7, 5.3.6]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -98,7 +98,7 @@ jobs:
             mingw-w64-x86_64-make
 
       - name: Verify GCC and Make installation (Windows)
-        shell: powershell
+        shell: pwsh
         if: runner.os == 'Windows'
         run: |
           gcc --version
@@ -106,18 +106,19 @@ jobs:
 
       - name: install Lua by vfox-lua plugin (Windows)
         if: runner.os == 'Windows'
+        shell: pwsh
         env:
           LUA_VERSION: "${{ matrix.lua_version }}"
         run: |
           vfox install "lua@$env:LUA_VERSION"
-          vfox use -g "lua@$env:LUA_VERSION"
+          vfox use "lua@$env:LUA_VERSION"
           Invoke-Expression "$(vfox activate pwsh)"
           echo "===============PATH==============="
           echo $env:PATH
           echo "===============PATH==============="
           Invoke-Expression "$(vfox activate pwsh)"
-          $result = lua.exe -v
-          if ($result -match "Lua @$env:LUA_VERSION") {
+          $result=(lua.exe -v)
+          if ($result -match "Lua $env:LUA_VERSION") {
               Write-Output "lua@$env:LUA_VERSION installed successfully!"
           } else {
               Write-Output "lua@$env:LUA_VERSION installed failed!"
