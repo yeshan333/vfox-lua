@@ -12,8 +12,12 @@ lua [vfox](https://github.com/version-fox) plugin. Use the vfox to manage multip
 
 ## Requirements
 
-- GNU Make
-- ANSI C compiler (like gcc).
+- MacOS/Linux (you can install by apt or homebrew)
+  - GNU Make
+  - ANSI C compiler (like gcc)
+- Windows (you can install by [msys2](https://www.msys2.org/))
+  - GCC Compiler
+  - Make
 
 ## Usage
 
@@ -29,7 +33,11 @@ vfox install lua@5.4.7
 
 ## Notice
 
+1. Make sure build tools (gcc compiler、make or others) are in the system [$PATH](https://superuser.com/questions/284342/what-are-path-and-other-environment-variables-and-how-can-i-set-or-use-them).
 
+2. If you are installing Lua 5.4.x or greater on Linux. By default, Lua will be compiled with readline. For build the interactive Lua interpreter with handy line-editing and history capabilities, you need to install the readline library.
+
+3. Use `PowerShell` to install the Lua on Windows.
 
 ## Acknowledgements
 
