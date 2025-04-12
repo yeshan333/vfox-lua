@@ -5,13 +5,13 @@ PLUGIN = {}
 --- Plugin name
 PLUGIN.name = "lua"
 --- Plugin version
-PLUGIN.version = "0.1.0"
+PLUGIN.version = "1.0.0"
 --- Plugin homepage
 PLUGIN.homepage = "https://github.com/yeshan333/vfox-lua"
 --- Plugin license, please choose a correct license according to your needs.
 PLUGIN.license = "Apache 2.0"
 --- Plugin description
-PLUGIN.description = "lua vfox plugin. Use the vfox to manage multiple lua versions in Linux/Darwin."
+PLUGIN.description = "lua vfox plugin. Use the vfox to manage multiple lua versions on Linux /Darwin MacOS / Windows."
 
 
 --- !!! OPTIONAL !!!

@@ -8,7 +8,7 @@
 
 # vfox-lua plugin
 
-lua [vfox](https://github.com/version-fox) plugin. Use the vfox to manage multiple [lua](https://www.lua.org/ftp/) versions in Linux/Darwin MacOS.
+Lua [vfox](https://github.com/version-fox) plugin. Use the vfox to manage multiple [lua](https://www.lua.org/ftp/) versions on Linux、Darwin MacOS、Windows.
 
 ## Requirements
 
@@ -38,6 +38,10 @@ vfox install lua@5.4.7
 2. If you are installing Lua 5.4.x or greater on Linux. By default, Lua will be compiled with readline. For build the interactive Lua interpreter with handy line-editing and history capabilities, you need to install the readline library.
 
 3. Use `PowerShell` to install the Lua on Windows.
+
+## Known Issue
+
+- Lua versions 5.0 and earlier can not install on Linux.
 
 ## Acknowledgements
 
