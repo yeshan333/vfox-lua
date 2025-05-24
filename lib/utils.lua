@@ -38,23 +38,20 @@ function lua_utils.is_dir(path)
 end
 
 function lua_utils.check_readline_installed()
-    -- Check if the OS is Linux
-    if package.config:sub(1,1) == '/' then
-        -- On Linux, check for readline library
-        -- Check for header files
-        if (os.execute("test -f /usr/include/readline/readline.h") == 0 or
-            os.execute("test -f /usr/local/include/readline/readline.h") == 0 or
-            os.execute("test -f /usr/include/readline.h") == 0 or
-            -- Check with ldconfig
-            os.execute("ldconfig -p | grep -q libreadline") == 0) then
-            return true
-        else
+    if RUNTIME.osType == "Linux" then
+        -- Check with ldconfig
+        if not os.execute("ldconfig -p | grep -q libreadline") then
+            -- Readline library is available
             return false
         end
-    else
-        -- Not Linux, assume readline is available or not needed
         return true
+    elseif RUNTIME.osType == "darwin" then
+        if not os.execute("brew list readline") then
+            return false
+        end
     end
+    -- Not Linux or MacOS, assume readline is available or not needed
+    return true
 end
 
 return lua_utils
