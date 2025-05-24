@@ -45,9 +45,9 @@ end
 -- @return boolean `true` if readline is installed, `false` otherwise.
 function lua_utils.check_readline_installed()
     if RUNTIME.osType == "Linux" then
-        -- Check with ldconfig
+        -- Check with ldconfig to determine if readline is missing
         if not os.execute("ldconfig -p | grep -q libreadline") then
-            -- Readline library is available
+            -- Readline library is missing
             return false
         end
         return true
