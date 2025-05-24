@@ -6,6 +6,10 @@ local Utils = require("utils")
 --- @field ctx.version string User-input version
 --- @return table Version information
 function PLUGIN:PreInstall(ctx)
+    if not Utils.check_readline_installed() then
+        print("Error: readline library not found. Please install readline development packages (e.g., libreadline-dev or readline-devel) and try again.\n")
+        error("readline library not found, Lua will be compiled with readline ")
+    end
     local lua_version = ctx.version
     local download_url
 

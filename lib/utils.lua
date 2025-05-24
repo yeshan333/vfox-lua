@@ -37,5 +37,27 @@ function lua_utils.is_dir(path)
     return status == 0
 end
 
+--- Checks if the readline library is installed on the system.
+-- This function supports Linux and macOS platforms.
+-- On Linux, it uses `ldconfig` to check for the library.
+-- On macOS, it uses `brew list` to verify installation.
+-- For other platforms, it assumes readline is available or not required.
+-- @return boolean `true` if readline is installed, `false` otherwise.
+function lua_utils.check_readline_installed()
+    if RUNTIME.osType == "Linux" then
+        -- Check with ldconfig to determine if readline is missing
+        if not os.execute("ldconfig -p | grep -q libreadline") then
+            -- Readline library is missing
+            return false
+        end
+        return true
+    elseif RUNTIME.osType == "darwin" then
+        if not os.execute("brew list readline") then
+            return false
+        end
+    end
+    -- Not Linux or MacOS, assume readline is available or not needed
+    return true
+end
 
 return lua_utils

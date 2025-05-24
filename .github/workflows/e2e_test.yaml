@@ -11,33 +11,43 @@ jobs:
     strategy:
       matrix:
         # ref: https://github.com/actions/runner-images
-        os: [ubuntu-22.04, macos-13, windows-latest]
+        os: [ubuntu-latest, macos-13, windows-latest]
         lua_version: [5.4.7, 5.3.6]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: install vfox (Linux)
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '^1.24.2' # The Go version to download (if necessary) and use.
+
+      - name: build & install vfox (Unix-like)
+        if: runner.os != 'Windows'
+        run: |
+          git clone https://github.com/version-fox/vfox.git
+          cd vfox
+          go build -o vfox
+          chmod +x vfox
+          cp vfox /usr/local/bin
+
+      - name: build & install vfox (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          git clone https://github.com/version-fox/vfox.git
+          cd vfox
+          go build -o vfox.exe
+          echo "$pwd" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          ./vfox.exe -version
+
+      - name: install readline lib (Linux)
         if: runner.os == 'Linux'
         run: |
-          echo "deb [trusted=yes] https://apt.fury.io/versionfox/ /" | sudo tee /etc/apt/sources.list.d/versionfox.list
-          sudo apt-get update
-          sudo apt-get install vfox
+          sudo apt-get install libreadline-dev -y
       
-      - name: install vfox (MacOS)
+      - name: install readline lib (MacOS)
         if: runner.os == 'MacOS'
         run: |
-          brew tap version-fox/tap
-          brew install vfox
-
-      - name: install scoop (Windows)
-        if: runner.os == 'Windows'
-        uses: MinoruSekine/setup-scoop@v3
-    
-      - name: install vfox (Windows)
-        if: runner.os == 'Windows'
-        run: |
-          scoop install vfox
+          brew install readline
 
       - name: add vfox-lua plugin
         if: runner.os == 'Windows'
