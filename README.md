@@ -26,7 +26,7 @@ Lua [vfox](https://github.com/version-fox) plugin. Use the vfox to manage multip
 vfox add --source https://github.com/yeshan333/vfox-lua/archive/refs/heads/main.zip lua
 
 # install an available lua version
-vofx search lua
+vfox search lua
 # or specific version 
 vfox install lua@5.4.7
 ```
