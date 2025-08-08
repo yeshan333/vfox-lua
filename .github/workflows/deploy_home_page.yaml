@@ -37,7 +37,7 @@ jobs:
         run: mkdir -p _site
 
       - name: Generate homepage using iFlow CLI
-        uses: ./
+        uses: vibe-ideas/iflow-cli-action@main
         with:
           prompt: |
             请仅读取当前仓库的 README.md 文件内容（不要读取其他任何文件），将其转换为一个基于 Reveal.js 的精美幻灯片风格文档网站并保存为 _site/index.html。
