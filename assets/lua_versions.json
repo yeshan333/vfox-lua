@@ -1,5 +1,11 @@
 [
     {
+        "filename": "lua-5.5.0.tar.gz",
+        "date": "2025-12-15",
+        "size": "396950",
+        "checksum (sha256)": "57ccc32bbbd005cab75bcc52444052535af691789dba2b9016d5c50640d68b3d"
+    },
+    {
         "filename": "lua-5.4.8.tar.gz",
         "date": "2025-05-21",
         "size": "374332",
@@ -265,11 +271,17 @@
     },
     {
         "filename": "lua-all.tar.gz",
-        "date": "2025-06-04",
-        "size": "6104842",
-        "checksum (sha256)": "9396d1f09857ff84220a1ba46abeaa305b425edf926d90f39c1d229d6d30db64"
+        "date": "2025-12-22",
+        "size": "6366268",
+        "checksum (sha256)": "1d6badc148b87038a5f7279efdaf6855a22595c7ac16d662c4dc7cb61a1601ce"
     },
     {},
+    {
+        "filename": "refman-5.5.tar.gz",
+        "date": "2025-12-22",
+        "size": "132143",
+        "checksum (sha256)": "4f3eb7d97dc2809762a3f307dd83b0022bebf35474750ac794892a143908d18d"
+    },
     {
         "filename": "refman-5.4.tar.gz",
         "date": "2025-12-04",
