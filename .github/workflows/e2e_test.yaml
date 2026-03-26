@@ -129,7 +129,6 @@ jobs:
           echo "===============PATH==============="
           echo $env:PATH
           echo "===============PATH==============="
-          Invoke-Expression "$(vfox activate pwsh)"
           $result=(lua.exe -v)
           if ($result -match "Lua $env:LUA_VERSION") {
               Write-Output "lua@$env:LUA_VERSION installed successfully!"
