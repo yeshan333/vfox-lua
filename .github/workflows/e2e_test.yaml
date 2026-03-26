@@ -65,6 +65,7 @@ jobs:
           LUA_VERSION: ${{ matrix.lua_version }}
         run: |
           vfox install lua@$LUA_VERSION
+          eval "$(vfox activate bash)"
           vfox use -g lua@$LUA_VERSION
           eval "$(vfox activate bash)"
           echo "===============PATH==============="
@@ -84,6 +85,7 @@ jobs:
           LUA_VERSION: ${{ matrix.lua_version }}
         run: |
           vfox install lua@$LUA_VERSION
+          eval "$(vfox activate bash)"
           vfox use -g lua@$LUA_VERSION
           eval "$(vfox activate bash)"
           echo "===============PATH==============="
@@ -121,6 +123,7 @@ jobs:
           LUA_VERSION: "${{ matrix.lua_version }}"
         run: |
           vfox install "lua@$env:LUA_VERSION"
+          Invoke-Expression "$(vfox activate pwsh)"
           vfox use "lua@$env:LUA_VERSION"
           Invoke-Expression "$(vfox activate pwsh)"
           echo "===============PATH==============="
