@@ -31,6 +31,18 @@ vfox search lua
 vfox install lua@5.4.7
 ```
 
+### Usage with mise
+
+The vfox-lua plugin can also be used through [mise](https://mise.jdx.dev/), a popular dev tools manager that supports vfox plugins as a backend.
+
+```shell
+# Install and activate lua interpreter through mise using vfox backend
+mise use -g vfox:yeshan333/lua@5.5.0
+
+# Use mise exec to run lua interpreter
+mise exec -- lua -v
+```
+
 ## Notice
 
 1. Make sure build tools (gcc compiler、make or others) are in the system [$PATH](https://superuser.com/questions/284342/what-are-path-and-other-environment-variables-and-how-can-i-set-or-use-them).
