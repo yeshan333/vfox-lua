@@ -1,11 +1,11 @@
 name: Build and Deploy Homepage
 
-on:
-  # Allow manual trigger
-  workflow_dispatch:
-  # Also run on pushes to main branch
-  push:
-    branches: [ main ]
+# on:
+#   # Allow manual trigger
+#   workflow_dispatch:
+#   # Also run on pushes to main branch
+#   push:
+#     branches: [ main ]
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
