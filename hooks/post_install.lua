@@ -49,19 +49,20 @@ function PLUGIN:PostInstall(ctx)
         )
         status = os.execute(cmd)
     elseif RUNTIME.osType == "linux" then
-        if lua_version > "5.4" then
-            local install_cmd1 = "cd " .. path .. " && make linux-readline " ..
-                "INSTALL_TOP=" .. path
-            local install_cmd2 = " && cd " .. path .. "&& make install " ..
-                "INSTALL_TOP=" .. path
-            status = os.execute(install_cmd1 .. install_cmd2)
+        local make_target
+        if lua_version >= "5.5" then
+            -- Lua 5.5+ removed 'linux-readline' target; 'linux' now includes readline via dynamic loading
+            make_target = "linux"
+        elseif lua_version > "5.4" then
+            make_target = "linux-readline"
         else
-            local install_cmd1 = "cd " .. path .. " && make linux " ..
-                "INSTALL_TOP=" .. path
-            local install_cmd2 = " && cd " .. path .. "&& make install " ..
-                "INSTALL_TOP=" .. path
-            status = os.execute(install_cmd1 .. install_cmd2)
+            make_target = "linux"
         end
+        local install_cmd1 = "cd " .. path .. " && make " .. make_target ..
+            " INSTALL_TOP=" .. path
+        local install_cmd2 = " && cd " .. path .. "&& make install " ..
+            "INSTALL_TOP=" .. path
+        status = os.execute(install_cmd1 .. install_cmd2)
     elseif RUNTIME.osType == "darwin" then
         local install_cmd1 = "cd " .. path .. " && make macosx " ..
             "INSTALL_TOP=" .. path
