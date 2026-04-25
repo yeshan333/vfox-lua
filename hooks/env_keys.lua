@@ -24,32 +24,32 @@ function PLUGIN:EnvKeys(ctx)
             key = "PATH",
             value = luarocksBin,
         })
-    end
 
-    if shortVersion then
-        local packagePath = string.format(
-            "package.path = package.path .. ';%s/share/lua/%s/?.lua;%s/share/lua/%s/?/init.lua;%s/luarocks/share/lua/%s/?.lua;%s/luarocks/share/lua/%s/?/init.lua'",
-            installDir,
-            shortVersion,
-            installDir,
-            shortVersion,
-            installDir,
-            shortVersion,
-            installDir,
-            shortVersion
-        )
-        local packageCpath = string.format(
-            "package.cpath = package.cpath .. ';%s/lib/lua/%s/?.so;%s/luarocks/lib/lua/%s/?.so'",
-            installDir,
-            shortVersion,
-            installDir,
-            shortVersion
-        )
+        if shortVersion then
+            local packagePath = string.format(
+                "package.path = package.path .. ';%s/share/lua/%s/?.lua;%s/share/lua/%s/?/init.lua;%s/luarocks/share/lua/%s/?.lua;%s/luarocks/share/lua/%s/?/init.lua'",
+                installDir,
+                shortVersion,
+                installDir,
+                shortVersion,
+                installDir,
+                shortVersion,
+                installDir,
+                shortVersion
+            )
+            local packageCpath = string.format(
+                "package.cpath = package.cpath .. ';%s/lib/lua/%s/?.so;%s/luarocks/lib/lua/%s/?.so'",
+                installDir,
+                shortVersion,
+                installDir,
+                shortVersion
+            )
 
-        table.insert(envs, {
-            key = "LUA_INIT",
-            value = packagePath .. "\n" .. packageCpath,
-        })
+            table.insert(envs, {
+                key = "LUA_INIT",
+                value = packagePath .. "\n" .. packageCpath,
+            })
+        end
     end
 
     return envs
