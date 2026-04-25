@@ -189,3 +189,40 @@ jobs:
           luarocks --version
           luarocks install luacheck
           luarocks list | grep luacheck
+
+  mise_luarocks_tests:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        lua_version: [5.4.7]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install readline lib (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get install libreadline-dev -y
+
+      - name: install readline lib (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          brew install readline
+
+      - name: install Lua with LuaRocks via mise
+        env:
+          LUA_VERSION: ${{ matrix.lua_version }}
+          VFOX_LUA_LUAROCKS: "1"
+        run: |
+          curl https://mise.run | sh
+          export PATH="$HOME/.local/bin:$PATH"
+
+          $HOME/.local/bin/mise use -g "vfox:${{ github.repository }}@$LUA_VERSION"
+
+          echo "=== Verify Lua ==="
+          $HOME/.local/bin/mise exec -- lua -v | grep $LUA_VERSION
+
+          echo "=== Verify LuaRocks ==="
+          $HOME/.local/bin/mise exec -- luarocks --version
+          $HOME/.local/bin/mise exec -- luarocks install luacheck
+          $HOME/.local/bin/mise exec -- luarocks list | grep luacheck
