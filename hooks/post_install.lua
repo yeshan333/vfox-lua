@@ -59,13 +59,13 @@ function PLUGIN:PostInstall(ctx)
             make_target = "linux"
         end
         local install_cmd1 = "cd " .. path .. " && make " .. make_target ..
-            " INSTALL_TOP=" .. path
+            " MYCFLAGS=-fPIC INSTALL_TOP=" .. path
         local install_cmd2 = " && cd " .. path .. "&& make install " ..
             "INSTALL_TOP=" .. path
         status = os.execute(install_cmd1 .. install_cmd2)
     elseif RUNTIME.osType == "darwin" then
         local install_cmd1 = "cd " .. path .. " && make macosx " ..
-            "INSTALL_TOP=" .. path
+            "MYCFLAGS=-fPIC INSTALL_TOP=" .. path
         local install_cmd2 = " && cd " .. path .. "&& make install " ..
             "INSTALL_TOP=" .. path
         status = os.execute(install_cmd1 .. install_cmd2)
