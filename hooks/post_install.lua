@@ -75,4 +75,64 @@ function PLUGIN:PostInstall(ctx)
     if status ~= 0 then
         error("lua install failed, please check the stdout for details.")
     end
+
+    -- Install LuaRocks (Unix only, Lua 5.x only, opt-in via VFOX_LUA_LUAROCKS=1)
+    local luarocks_flag = os.getenv("VFOX_LUA_LUAROCKS")
+    local major = tonumber(string.match(lua_version, "^(%d+)"))
+    if luarocks_flag and luarocks_flag ~= "0" and luarocks_flag ~= "false"
+        and major and major >= 5 and RUNTIME.osType ~= "windows" then
+        local http = require("http")
+        local json = require("json")
+
+        local luarocksVersion = "3.11.1"
+
+        local resp, err = http.get({
+            url = "https://api.github.com/repos/luarocks/luarocks/releases/latest",
+        })
+
+        if err == nil and resp.status_code == 200 then
+            local data = json.decode(resp.body)
+            if data ~= nil and type(data) == "table" then
+                local tag = data["tag_name"]
+                if tag then
+                    luarocksVersion = string.gsub(tag, "^v", "")
+                end
+            end
+        end
+
+        local luarocksUrl = "https://github.com/luarocks/luarocks/archive/refs/tags/v" .. luarocksVersion .. ".tar.gz"
+        local luarocksArchive = path .. "/luarocks.tar.gz"
+
+        local downloadCmd = string.format("curl -sL '%s' -o '%s'", luarocksUrl, luarocksArchive)
+        status = os.execute(downloadCmd)
+        if status ~= 0 and status ~= true then
+            return
+        end
+
+        local extractCmd = string.format("cd '%s' && tar xzf luarocks.tar.gz", path)
+        status = os.execute(extractCmd)
+        if status ~= 0 and status ~= true then
+            return
+        end
+
+        local luarocksDir = path .. "/luarocks-" .. luarocksVersion
+        local configureCmd = string.format(
+            "cd '%s' && ./configure --with-lua='%s' --with-lua-include='%s/include' --with-lua-lib='%s/lib' --prefix='%s/luarocks' 2>/dev/null",
+            luarocksDir,
+            path,
+            path,
+            path,
+            path
+        )
+        status = os.execute(configureCmd)
+        if status ~= 0 and status ~= true then
+            os.execute(string.format("rm -rf '%s/luarocks.tar.gz' '%s/luarocks-'*", path, path))
+            return
+        end
+
+        local bootstrapCmd = string.format("cd '%s' && make bootstrap 2>&1", luarocksDir)
+        os.execute(bootstrapCmd)
+
+        os.execute(string.format("rm -rf '%s/luarocks.tar.gz' '%s/luarocks-'*", path, path))
+    end
 end

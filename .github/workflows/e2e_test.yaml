@@ -136,3 +136,56 @@ jobs:
               Write-Output "lua@$env:LUA_VERSION installed failed!"
               exit 1
           }
+
+  luarocks_tests:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        lua_version: [5.4.7]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '^1.24.2'
+
+      - name: build & install vfox
+        run: |
+          git clone https://github.com/version-fox/vfox.git
+          cd vfox
+          go build -o vfox
+          chmod +x vfox
+          cp vfox /usr/local/bin
+
+      - name: install readline lib (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get install libreadline-dev -y
+
+      - name: install readline lib (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          brew install readline
+
+      - name: add vfox-lua plugin
+        run: |
+          vfox add --source https://github.com/${{ github.repository_owner }}/vfox-lua/archive/${GITHUB_REF}.zip lua
+
+      - name: install Lua with LuaRocks
+        env:
+          LUA_VERSION: ${{ matrix.lua_version }}
+          VFOX_LUA_LUAROCKS: "1"
+        run: |
+          vfox install lua@$LUA_VERSION
+          eval "$(vfox activate bash)"
+          vfox use -g lua@$LUA_VERSION
+          eval "$(vfox activate bash)"
+
+          echo "=== Verify Lua ==="
+          lua -v | grep $LUA_VERSION
+
+          echo "=== Verify LuaRocks ==="
+          luarocks --version
+          luarocks install luacheck
+          luarocks list | grep luacheck
