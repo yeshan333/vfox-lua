@@ -8,57 +8,92 @@
 
 # vfox-lua plugin
 
-Lua [vfox](https://github.com/version-fox) plugin. Use the vfox to manage multiple [lua](https://www.lua.org/ftp/) versions on Linux、Darwin MacOS、Windows.
+Lua [vfox](https://github.com/version-fox) plugin. Use the vfox to manage multiple [lua](https://www.lua.org/ftp/) versions on Linux, macOS, and Windows.
 
 ## Requirements
 
-- MacOS/Linux (you can install by apt or homebrew)
+- macOS / Linux
   - GNU Make
-  - ANSI C compiler (like gcc)
-- Windows (you can install by [msys2](https://www.msys2.org/))
-  - GCC Compiler
+  - ANSI C compiler (gcc or clang)
+  - readline development library (`libreadline-dev` on Debian/Ubuntu, `readline` via Homebrew on macOS)
+- Windows (install via [MSYS2](https://www.msys2.org/))
+  - GCC compiler
   - Make
 
 ## Usage
+
+### Install with vfox
 
 ```shell
 # install plugin
 vfox add --source https://github.com/yeshan333/vfox-lua/archive/refs/heads/main.zip lua
 
-# install an available lua version
+# search available versions
 vfox search lua
-# or specific version 
+
+# install a specific version
 vfox install lua@5.4.7
+
+# activate
+vfox use -g lua@5.4.7
 ```
 
-### Usage with mise
+### Install with mise
 
-The vfox-lua plugin can also be used through [mise](https://mise.jdx.dev/), a popular dev tools manager that supports vfox plugins as a backend.
+The vfox-lua plugin can also be used through [mise](https://mise.jdx.dev/), which supports vfox plugins as a backend.
 
 ```shell
-# Install and activate lua interpreter through mise using vfox backend
-mise use -g vfox:yeshan333/lua@5.5.0
+# install and activate
+mise use -g vfox:yeshan333/lua@5.4.7
 
-# Use mise exec to run lua interpreter
+# run lua
 mise exec -- lua -v
+```
+
+### LuaRocks Integration
+
+LuaRocks can be automatically installed alongside Lua by setting the `VFOX_LUA_LUAROCKS` environment variable. This is supported on Linux and macOS only.
+
+```shell
+# vfox
+VFOX_LUA_LUAROCKS=1 vfox install lua@5.4.7
+
+# mise
+VFOX_LUA_LUAROCKS=1 mise use -g vfox:yeshan333/lua@5.4.7
+```
+
+When enabled, the plugin will:
+
+1. Fetch the latest LuaRocks release from GitHub (fallback: 3.11.1)
+2. Build and bootstrap LuaRocks into `<install-dir>/luarocks/`
+3. Add `luarocks` to `PATH` and configure `LUA_INIT` so that installed rocks are immediately available
+
+```shell
+# verify
+luarocks --version
+
+# install a rock
+luarocks install luacheck
 ```
 
 ## Notice
 
-1. Make sure build tools (gcc compiler、make or others) are in the system [$PATH](https://superuser.com/questions/284342/what-are-path-and-other-environment-variables-and-how-can-i-set-or-use-them).
+1. Make sure build tools (gcc/clang, make) are in your system [`$PATH`](https://superuser.com/questions/284342/what-are-path-and-other-environment-variables-and-how-can-i-set-or-use-them).
 
-2. If you are installing Lua 5.4.x or greater on Linux or MacOS. By default, Lua will be compiled with readline. For build the interactive Lua interpreter with handy line-editing and history capabilities, you need to install the readline library.
+2. Lua 5.4+ on Linux/macOS is compiled with readline by default. Install the readline development library before building:
+   - Debian/Ubuntu: `sudo apt-get install libreadline-dev`
+   - macOS: `brew install readline`
 
-3. Use `PowerShell` to install the Lua on Windows.
+3. On Windows, use `PowerShell` to install Lua.
 
-## Known Issue
+## Known Issues
 
-- Lua versions 5.0 and earlier can not install on Linux.
+- Lua versions 5.0 and earlier cannot be installed on Linux.
+- LuaRocks integration is not available on Windows.
 
 ## Acknowledgements
 
-Thanks for these awesome resources that were used during the development of the **vfox-lua**:
-
-- [lua](https://www.lua.org/)
-- [version-fox](https://github.com/version-fox/vfox)
+- [Lua](https://www.lua.org/)
+- [vfox](https://github.com/version-fox/vfox)
+- [LuaRocks](https://luarocks.org/)
 - [asdf-lua](https://github.com/Stratus3D/asdf-lua)
