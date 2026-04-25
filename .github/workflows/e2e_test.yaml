@@ -87,6 +87,19 @@ jobs:
             echo "Lua version $LUA_VERSION installed successfully"
           fi
 
+      - name: verify liblua.a is compiled with -fPIC (Linux)
+        if: runner.os == 'Linux'
+        env:
+          LUA_VERSION: ${{ matrix.lua_version }}
+        run: |
+          eval "$(vfox activate bash)"
+          vfox use -g lua@$LUA_VERSION
+          eval "$(vfox activate bash)"
+          LUA_PREFIX=$(dirname $(dirname $(which lua)))
+          echo "Checking $LUA_PREFIX/lib/liblua.a"
+          gcc -shared -o /dev/null -Wl,--whole-archive "$LUA_PREFIX/lib/liblua.a" -Wl,--no-whole-archive -lm -ldl
+          echo "liblua.a is compiled with -fPIC"
+
       - name: install lua by vfox-lua plugin (Darwin)
         if: runner.os == 'MacOS'
         env:
@@ -106,6 +119,19 @@ jobs:
           else
             echo "Lua version $LUA_VERSION installed successfully"
           fi
+
+      - name: verify liblua.a is compiled with -fPIC (macOS)
+        if: runner.os == 'MacOS'
+        env:
+          LUA_VERSION: ${{ matrix.lua_version }}
+        run: |
+          eval "$(vfox activate bash)"
+          vfox use -g lua@$LUA_VERSION
+          eval "$(vfox activate bash)"
+          LUA_PREFIX=$(dirname $(dirname $(which lua)))
+          echo "Checking $LUA_PREFIX/lib/liblua.a"
+          cc -dynamiclib -o /dev/null -Wl,-force_load,"$LUA_PREFIX/lib/liblua.a" -lm
+          echo "liblua.a is compiled with -fPIC"
 
       - name: Setup MSYS2 (Windows)
         uses: msys2/setup-msys2@v2

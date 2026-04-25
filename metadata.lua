@@ -5,7 +5,7 @@ PLUGIN = {}
 --- Plugin name
 PLUGIN.name = "lua"
 --- Plugin version
-PLUGIN.version = "1.1.0"
+PLUGIN.version = "1.2.0"
 --- Plugin homepage
 PLUGIN.homepage = "https://github.com/yeshan333/vfox-lua"
 --- Plugin license, please choose a correct license according to your needs.
