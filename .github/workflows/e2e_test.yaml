@@ -87,6 +87,15 @@ jobs:
             echo "Lua version $LUA_VERSION installed successfully"
           fi
 
+      - name: install latest lua by vfox-lua plugin (Linux)
+        if: runner.os == 'Linux' && matrix.lua_version == '5.5.0'
+        run: |
+          vfox install lua@latest
+          eval "$(vfox activate bash)"
+          vfox use -g lua@latest
+          eval "$(vfox activate bash)"
+          lua -v | grep '^Lua [0-9]'
+
       - name: verify liblua.a is compiled with -fPIC (Linux)
         if: runner.os == 'Linux'
         env:

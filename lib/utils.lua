@@ -2,17 +2,27 @@ local http = require("http")
 
 local lua_utils = {}
 
+local function parse_version_line(line)
+    return string.match(line, "([^,]+),([^,]+)")
+end
+
+local function is_lua_release_version(version)
+    return string.match(version, "^%d") ~= nil
+end
+
 function lua_utils.get_lua_release_verions()
     local result = {}
     local resp, err = http.get({
         url = "https://fastly.jsdelivr.net/gh/yeshan333/vfox-lua@main/assets/versions.txt"
     })
     for line in string.gmatch(resp.body, '([^\n]+)') do
-        local version, checksum = string.match(line, "([^,]+),([^,]+)")
-        table.insert(result, {
-            version = version,
-            checksum = checksum
-        })
+        local version, checksum = parse_version_line(line)
+        if version and checksum and is_lua_release_version(version) then
+            table.insert(result, {
+                version = version,
+                checksum = checksum
+            })
+        end
     end
 
     return result
@@ -23,7 +33,7 @@ function lua_utils.get_version_info(lua_version)
         url = "https://fastly.jsdelivr.net/gh/yeshan333/vfox-lua@main/assets/versions.txt"
     })
     for line in string.gmatch(resp.body, '([^\n]+)') do
-        local version, checksum = string.match(line, "([^,]+),([^,]+)")
+        local version, checksum = parse_version_line(line)
         if lua_version == version then
             return version, checksum
         end
