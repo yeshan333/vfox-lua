@@ -40,14 +40,20 @@ vfox use -g lua@5.4.7
 
 ### Install with mise
 
-The vfox-lua plugin can also be used through [mise](https://mise.jdx.dev/), which supports vfox plugins as a backend.
+The vfox-lua plugin can also be used through [mise](https://mise.jdx.dev/), which supports vfox plugins.
 
 ```shell
+# install the plugin
+mise plugin install lua https://github.com/yeshan333/vfox-lua/archive/refs/heads/main.zip
+
+# search available versions
+mise ls-remote lua
+
 # install and activate
-mise use -g vfox:yeshan333/lua@5.4.7
+mise use -g lua@5.4.7
 
 # run lua
-mise exec -- lua -v
+lua -v
 ```
 
 ### LuaRocks Integration
@@ -59,7 +65,7 @@ LuaRocks can be automatically installed alongside Lua by setting the `VFOX_LUA_L
 VFOX_LUA_LUAROCKS=1 vfox install lua@5.4.7
 
 # mise
-VFOX_LUA_LUAROCKS=1 mise use -g vfox:yeshan333/lua@5.4.7
+VFOX_LUA_LUAROCKS=1 mise use -g lua@5.4.7
 ```
 
 When enabled, the plugin will:
