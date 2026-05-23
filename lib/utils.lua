@@ -8,7 +8,6 @@ local windows_luabinaries_packages = {
         executable_prefix = "lua55",
         wlua_prefix = "wlua55",
         dll_name = "lua55.dll",
-        sha256 = "7825cb261d0dc61cb0e1511d451ceaf10bf72d2bba1855bfd3350add190e0024",
     },
     ["5.4.8"] = {
         archive_name = "lua-5.4.8_Win64_bin.zip",
@@ -16,7 +15,6 @@ local windows_luabinaries_packages = {
         executable_prefix = "lua54",
         wlua_prefix = "wlua54",
         dll_name = "lua54.dll",
-        sha256 = "9c5d151bfe2b62bd685d88bd1963c17dd5ea2fed37defcda7c02ee6e226bcc39",
     },
     ["5.3.6"] = {
         archive_name = "lua-5.3.6_Win64_bin.zip",
@@ -24,7 +22,6 @@ local windows_luabinaries_packages = {
         executable_prefix = "lua53",
         wlua_prefix = "wlua53",
         dll_name = "lua53.dll",
-        sha256 = "5150a30db5b62956d1bca4c2f3e5d1e08c00e398d8c902f0572b09f014012287",
     },
     ["5.2.4"] = {
         archive_name = "lua-5.2.4_Win64_bin.zip",
@@ -32,7 +29,6 @@ local windows_luabinaries_packages = {
         executable_prefix = "lua52",
         wlua_prefix = "wlua52",
         dll_name = "lua52.dll",
-        sha256 = "6cc8153640b5c1fc4632f18dadaa8696c5b7aef85e885245280d7e31011549d9",
     },
 }
 
@@ -111,7 +107,6 @@ function lua_utils.get_windows_luabinaries_package(lua_version)
         executable_prefix = pkg_meta.executable_prefix,
         wlua_prefix = pkg_meta.wlua_prefix,
         dll_name = pkg_meta.dll_name,
-        sha256 = pkg_meta.sha256,
         url = "https://sourceforge.net/projects/luabinaries/files/" ..
             pkg_meta.relative_path .. "/download?use_mirror=autoselect",
     }

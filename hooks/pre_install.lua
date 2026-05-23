@@ -25,7 +25,6 @@ function PLUGIN:PreInstall(ctx)
         return {
             version = lua_version,
             url = pkg_meta.url,
-            sha256 = pkg_meta.sha256,
         }
     end
 
