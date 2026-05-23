@@ -1,3 +1,5 @@
+local Utils = require("utils")
+
 --- Each SDK may have different environment variable configurations.
 --- This allows plugins to define custom environment variables (including PATH settings)
 --- @param ctx table Context information
@@ -16,10 +18,7 @@ function PLUGIN:EnvKeys(ctx)
         },
     }
 
-    local rootLua = installDir .. "/lua.exe"
-    local rootLuaFile = io.open(rootLua, "r")
-    if rootLuaFile ~= nil then
-        rootLuaFile:close()
+    if RUNTIME.osType == "windows" and Utils.use_windows_luabinaries() then
         table.insert(envs, 1, {
             key = "PATH",
             value = installDir,
