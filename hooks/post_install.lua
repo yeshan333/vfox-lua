@@ -1,3 +1,5 @@
+local Utils = require("utils")
+
 --- Extension point, called after PreInstall, can perform additional operations,
 --- such as file operations for the SDK installation directory or compile source code
 function CheckBuildTools(osType)
@@ -22,6 +24,43 @@ Make sure make.exe and gcc.exe are in the System $env:PATH in PowerShell.
     end
 end
 
+local function InstallWindowsLuaBinaries(path, lua_version)
+    local package = Utils.get_windows_luabinaries_package(lua_version)
+    if package == nil then
+        error("LuaBinaries package metadata missing for version " .. lua_version)
+    end
+
+    local cmd = string.format([=[
+powershell -Command "
+$ErrorActionPreference = 'Stop';
+$installDir = '%s';
+$binDir = Join-Path $installDir 'bin';
+New-Item -ItemType Directory -Force -Path $binDir | Out-Null;
+$luaExe = Join-Path $installDir '%s.exe';
+$luacExe = Join-Path $installDir 'luac%s.exe';
+$wluaExe = Join-Path $installDir '%s.exe';
+$luaDll = Join-Path $installDir '%s';
+if (-not (Test-Path $luaExe)) { throw 'LuaBinaries executable package layout is unexpected.' }
+Copy-Item -Path $luaExe -Destination (Join-Path $binDir 'lua.exe') -Force;
+if (Test-Path $luacExe) { Copy-Item -Path $luacExe -Destination (Join-Path $binDir 'luac.exe') -Force; }
+if (Test-Path $wluaExe) { Copy-Item -Path $wluaExe -Destination (Join-Path $binDir 'wlua.exe') -Force; }
+if (Test-Path $luaDll) { Copy-Item -Path $luaDll -Destination (Join-Path $binDir '%s') -Force; }
+"
+]=],
+        path,
+        package.executable_prefix,
+        string.sub(package.executable_prefix, 4),
+        package.wlua_prefix,
+        package.dll_name,
+        package.dll_name
+    )
+
+    local status = os.execute(cmd)
+    if status ~= 0 then
+        error("failed to prepare LuaBinaries files for Windows")
+    end
+end
+
 
 function PLUGIN:PostInstall(ctx)
     --- ctx.rootPath SDK installation directory
@@ -31,6 +70,11 @@ function PLUGIN:PostInstall(ctx)
     local normalizedPath = string.gsub(path, "\\", "/")
     local lua_version = sdkInfo.version
     print(string.format("os type: %s, lua installed path: %s", RUNTIME.osType, path))
+
+    if RUNTIME.osType == "windows" and Utils.use_windows_luabinaries() then
+        InstallWindowsLuaBinaries(path, lua_version)
+        return
+    end
 
     CheckBuildTools(RUNTIME.osType)
     -- TODO: support install luajit

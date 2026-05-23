@@ -1,6 +1,36 @@
 local http = require("http")
 
 local lua_utils = {}
+local windows_luabinaries_packages = {
+    ["5.5.0"] = {
+        archive_name = "lua-5.5.0_Win64_bin.zip",
+        relative_path = "5.5.0/Tools%20Executables/lua-5.5.0_Win64_bin.zip",
+        executable_prefix = "lua55",
+        wlua_prefix = "wlua55",
+        dll_name = "lua55.dll",
+    },
+    ["5.4.8"] = {
+        archive_name = "lua-5.4.8_Win64_bin.zip",
+        relative_path = "5.4.8/Tools%20Executables/lua-5.4.8_Win64_bin.zip",
+        executable_prefix = "lua54",
+        wlua_prefix = "wlua54",
+        dll_name = "lua54.dll",
+    },
+    ["5.3.6"] = {
+        archive_name = "lua-5.3.6_Win64_bin.zip",
+        relative_path = "5.3.6/Tools%20Executables/lua-5.3.6_Win64_bin.zip",
+        executable_prefix = "lua53",
+        wlua_prefix = "wlua53",
+        dll_name = "lua53.dll",
+    },
+    ["5.2.4"] = {
+        archive_name = "lua-5.2.4_Win64_bin.zip",
+        relative_path = "5.2.4/Tools%20Executables/lua-5.2.4_Win64_bin.zip",
+        executable_prefix = "lua52",
+        wlua_prefix = "wlua52",
+        dll_name = "lua52.dll",
+    },
+}
 
 local function parse_version_line(line)
     return string.match(line, "([^,]+),([^,]+)")
@@ -40,6 +70,31 @@ function lua_utils.get_version_info(lua_version)
     end
 
     return nil, nil
+end
+
+function lua_utils.use_windows_luabinaries()
+    local flag = os.getenv("VFOX_LUA_WINDOWS_LUABINARIES")
+    return flag ~= nil and flag ~= "" and flag ~= "0" and flag ~= "false"
+end
+
+function lua_utils.get_windows_luabinaries_package(lua_version)
+    if RUNTIME.osType ~= "windows" then
+        return nil
+    end
+
+    local package = windows_luabinaries_packages[lua_version]
+    if package == nil then
+        return nil
+    end
+
+    return {
+        archive_name = package.archive_name,
+        executable_prefix = package.executable_prefix,
+        wlua_prefix = package.wlua_prefix,
+        dll_name = package.dll_name,
+        url = "https://sourceforge.net/projects/luabinaries/files/" ..
+            package.relative_path .. "/download?use_mirror=autoselect",
+    }
 end
 
 function lua_utils.is_dir(path)
