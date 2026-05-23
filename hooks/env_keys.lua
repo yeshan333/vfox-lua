@@ -5,7 +5,7 @@
 function PLUGIN:EnvKeys(ctx)
     local sdkInfo = ctx.sdkInfo["lua"]
     local version = sdkInfo.version
-    local installDir = sdkInfo.path
+    local installDir = ctx.path
 
     local shortVersion = string.match(version, "^(%d+%.%d+)")
 
