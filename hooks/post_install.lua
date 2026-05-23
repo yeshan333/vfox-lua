@@ -56,9 +56,10 @@ local function InstallWindowsLuaBinaries(path, lua_version)
         error("LuaBinaries package metadata missing for version " .. lua_version)
     end
 
-    local bin_dir = path .. "\\bin"
-    os.execute(string.format('if not exist "%s" mkdir "%s"', bin_dir, bin_dir))
-
+    -- LuaBinaries archives expand executables (lua54.exe, luac54.exe, ...) into the install
+    -- root next to the DLL. We add aliases (lua.exe, luac.exe, wlua.exe) in the same folder
+    -- so users can invoke them by their canonical names. env_keys.lua already prepends the
+    -- install root to PATH, so a separate bin/ directory isn't needed.
     local lua_exe = path .. "\\" .. pkg_meta.executable_prefix .. ".exe"
     if not file_exists(lua_exe) then
         error("LuaBinaries executable not found at " .. lua_exe)
@@ -66,25 +67,17 @@ local function InstallWindowsLuaBinaries(path, lua_version)
 
     local copies = {
         { src = lua_exe, dst = path .. "\\lua.exe" },
-        { src = lua_exe, dst = bin_dir .. "\\lua.exe" },
     }
 
     local luac_prefix = "luac" .. string.sub(pkg_meta.executable_prefix, 4)
     local luac_exe = path .. "\\" .. luac_prefix .. ".exe"
     if file_exists(luac_exe) then
         table.insert(copies, { src = luac_exe, dst = path .. "\\luac.exe" })
-        table.insert(copies, { src = luac_exe, dst = bin_dir .. "\\luac.exe" })
     end
 
     local wlua_exe = path .. "\\" .. pkg_meta.wlua_prefix .. ".exe"
     if file_exists(wlua_exe) then
         table.insert(copies, { src = wlua_exe, dst = path .. "\\wlua.exe" })
-        table.insert(copies, { src = wlua_exe, dst = bin_dir .. "\\wlua.exe" })
-    end
-
-    local lua_dll = path .. "\\" .. pkg_meta.dll_name
-    if file_exists(lua_dll) then
-        table.insert(copies, { src = lua_dll, dst = bin_dir .. "\\" .. pkg_meta.dll_name })
     end
 
     for _, item in ipairs(copies) do
