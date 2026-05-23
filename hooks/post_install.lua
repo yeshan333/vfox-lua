@@ -25,8 +25,8 @@ Make sure make.exe and gcc.exe are in the System $env:PATH in PowerShell.
 end
 
 local function InstallWindowsLuaBinaries(path, lua_version)
-    local package = Utils.get_windows_luabinaries_package(lua_version)
-    if package == nil then
+    local pkg_meta = Utils.get_windows_luabinaries_package(lua_version)
+    if pkg_meta == nil then
         error("LuaBinaries package metadata missing for version " .. lua_version)
     end
 
@@ -48,11 +48,11 @@ if (Test-Path $wluaExe) { Copy-Item -Path $wluaExe -Destination (Join-Path $inst
 if (Test-Path $luaDll) { Copy-Item -Path $luaDll -Destination (Join-Path $binDir '%s') -Force }
 ]=],
         path,
-        package.executable_prefix,
-        string.sub(package.executable_prefix, 4),
-        package.wlua_prefix,
-        package.dll_name,
-        package.dll_name
+        pkg_meta.executable_prefix,
+        string.sub(pkg_meta.executable_prefix, 4),
+        pkg_meta.wlua_prefix,
+        pkg_meta.dll_name,
+        pkg_meta.dll_name
     )
 
     local script_file = io.open(script_path, "w")
@@ -62,13 +62,15 @@ if (Test-Path $luaDll) { Copy-Item -Path $luaDll -Destination (Join-Path $binDir
     script_file:write(script_content)
     script_file:close()
 
+    local powershell_script_path = string.gsub(script_path, "\\", "/")
+    powershell_script_path = string.gsub(powershell_script_path, "'", "''")
     local cmd = string.format(
-        "powershell -NoProfile -ExecutionPolicy Bypass -File %s",
-        script_path
+        "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& '%s'\"",
+        powershell_script_path
     )
     local status = os.execute(cmd)
     os.remove(script_path)
-    if status ~= 0 then
+    if not Utils.is_success_status(status) then
         error("failed to prepare LuaBinaries files for Windows")
     end
 end

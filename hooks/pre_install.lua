@@ -14,16 +14,18 @@ function PLUGIN:PreInstall(ctx)
     local download_url
 
     if RUNTIME.osType == "windows" and Utils.use_windows_luabinaries() then
-        local package = Utils.get_windows_luabinaries_package(lua_version)
-        if package == nil then
+        local pkg_meta = Utils.get_windows_luabinaries_package(lua_version)
+        if pkg_meta == nil then
             error("LuaBinaries does not provide a Windows binary for version " ..
-                lua_version .. ". Disable VFOX_LUA_WINDOWS_LUABINARIES or choose one of: 5.5.0, 5.4.8, 5.3.6, 5.2.4.")
+                lua_version .. ". Disable VFOX_LUA_WINDOWS_LUABINARIES or choose one of: " ..
+                Utils.get_windows_luabinaries_versions_text() .. ".")
         end
 
-        print("lua download url: " .. package.url)
+        print("lua download url: " .. pkg_meta.url)
         return {
             version = lua_version,
-            url = package.url,
+            url = pkg_meta.url,
+            sha256 = pkg_meta.sha256,
         }
     end
 

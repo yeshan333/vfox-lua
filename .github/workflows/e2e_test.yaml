@@ -60,7 +60,7 @@ jobs:
       - name: add vfox-lua plugin
         if: runner.os == 'Windows'
         run: |
-          vfox add --source https://github.com/${{ github.repository_owner }}/vfox-lua/archive/$env:GITHUB_REF.zip lua
+          vfox add --source "https://github.com/${{ github.repository_owner }}/vfox-lua/archive/${env:GITHUB_REF}.zip" lua
 
       - name: add vfox-lua plugin
         if: runner.os != 'Windows'
@@ -294,7 +294,7 @@ jobs:
       - name: add vfox-lua plugin
         shell: pwsh
         run: |
-          vfox add --source https://github.com/${{ github.repository_owner }}/vfox-lua/archive/$env:GITHUB_REF.zip lua
+          vfox add --source "https://github.com/${{ github.repository_owner }}/vfox-lua/archive/${env:GITHUB_REF}.zip" lua
 
       - name: install Lua from LuaBinaries by vfox-lua plugin
         shell: pwsh
