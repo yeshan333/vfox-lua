@@ -16,6 +16,16 @@ function PLUGIN:EnvKeys(ctx)
         },
     }
 
+    local rootLua = installDir .. "/lua.exe"
+    local rootLuaFile = io.open(rootLua, "r")
+    if rootLuaFile ~= nil then
+        rootLuaFile:close()
+        table.insert(envs, 1, {
+            key = "PATH",
+            value = installDir,
+        })
+    end
+
     local luarocksBin = installDir .. "/luarocks/bin"
     local f = io.open(luarocksBin, "r")
     if f ~= nil then
