@@ -63,7 +63,7 @@ if (Test-Path $luaDll) { Copy-Item -Path $luaDll -Destination (Join-Path $binDir
     script_file:close()
 
     local cmd = string.format(
-        "powershell -NoProfile -ExecutionPolicy Bypass -File \"%s\"",
+        "powershell -NoProfile -ExecutionPolicy Bypass -File %s",
         script_path
     )
     local status = os.execute(cmd)
