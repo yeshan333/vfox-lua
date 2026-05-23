@@ -31,21 +31,7 @@ local function InstallWindowsLuaBinaries(path, lua_version)
     end
 
     local cmd = string.format([=[
-powershell -Command "
-$ErrorActionPreference = 'Stop';
-$installDir = '%s';
-$binDir = Join-Path $installDir 'bin';
-New-Item -ItemType Directory -Force -Path $binDir | Out-Null;
-$luaExe = Join-Path $installDir '%s.exe';
-$luacExe = Join-Path $installDir 'luac%s.exe';
-$wluaExe = Join-Path $installDir '%s.exe';
-$luaDll = Join-Path $installDir '%s';
-if (-not (Test-Path $luaExe)) { throw 'LuaBinaries executable package layout is unexpected.' }
-Copy-Item -Path $luaExe -Destination (Join-Path $binDir 'lua.exe') -Force;
-if (Test-Path $luacExe) { Copy-Item -Path $luacExe -Destination (Join-Path $binDir 'luac.exe') -Force; }
-if (Test-Path $wluaExe) { Copy-Item -Path $wluaExe -Destination (Join-Path $binDir 'wlua.exe') -Force; }
-if (Test-Path $luaDll) { Copy-Item -Path $luaDll -Destination (Join-Path $binDir '%s') -Force; }
-"
+powershell -NoProfile -Command "& { $ErrorActionPreference = 'Stop'; $installDir = '%s'; $binDir = Join-Path $installDir 'bin'; New-Item -ItemType Directory -Force -Path $binDir | Out-Null; $luaExe = Join-Path $installDir '%s.exe'; $luacExe = Join-Path $installDir 'luac%s.exe'; $wluaExe = Join-Path $installDir '%s.exe'; $luaDll = Join-Path $installDir '%s'; if (-not (Test-Path $luaExe)) { throw 'LuaBinaries executable package layout is unexpected.' }; Copy-Item -Path $luaExe -Destination (Join-Path $binDir 'lua.exe') -Force; if (Test-Path $luacExe) { Copy-Item -Path $luacExe -Destination (Join-Path $binDir 'luac.exe') -Force }; if (Test-Path $wluaExe) { Copy-Item -Path $wluaExe -Destination (Join-Path $binDir 'wlua.exe') -Force }; if (Test-Path $luaDll) { Copy-Item -Path $luaDll -Destination (Join-Path $binDir '%s') -Force } }"
 ]=],
         path,
         package.executable_prefix,
