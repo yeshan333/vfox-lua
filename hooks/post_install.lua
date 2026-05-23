@@ -24,54 +24,73 @@ Make sure make.exe and gcc.exe are in the System $env:PATH in PowerShell.
     end
 end
 
+local function copy_file(src, dst)
+    local input = io.open(src, "rb")
+    if input == nil then
+        return false
+    end
+    local content = input:read("*a")
+    input:close()
+
+    local output = io.open(dst, "wb")
+    if output == nil then
+        return false
+    end
+    output:write(content)
+    output:close()
+    return true
+end
+
+local function file_exists(path)
+    local f = io.open(path, "rb")
+    if f == nil then
+        return false
+    end
+    f:close()
+    return true
+end
+
 local function InstallWindowsLuaBinaries(path, lua_version)
     local pkg_meta = Utils.get_windows_luabinaries_package(lua_version)
     if pkg_meta == nil then
         error("LuaBinaries package metadata missing for version " .. lua_version)
     end
 
-    local script_path = path .. "\\install_luabinaries.ps1"
-    local script_content = string.format([=[
-$ErrorActionPreference = 'Stop'
-$installDir = '%s'
-$binDir = Join-Path $installDir 'bin'
-New-Item -ItemType Directory -Force -Path $binDir | Out-Null
-$luaExe = Join-Path $installDir '%s.exe'
-$luacExe = Join-Path $installDir 'luac%s.exe'
-$wluaExe = Join-Path $installDir '%s.exe'
-$luaDll = Join-Path $installDir '%s'
-if (-not (Test-Path $luaExe)) { throw 'LuaBinaries executable package layout is unexpected.' }
-Copy-Item -Path $luaExe -Destination (Join-Path $installDir 'lua.exe') -Force
-Copy-Item -Path $luaExe -Destination (Join-Path $binDir 'lua.exe') -Force
-if (Test-Path $luacExe) { Copy-Item -Path $luacExe -Destination (Join-Path $installDir 'luac.exe') -Force; Copy-Item -Path $luacExe -Destination (Join-Path $binDir 'luac.exe') -Force }
-if (Test-Path $wluaExe) { Copy-Item -Path $wluaExe -Destination (Join-Path $installDir 'wlua.exe') -Force; Copy-Item -Path $wluaExe -Destination (Join-Path $binDir 'wlua.exe') -Force }
-if (Test-Path $luaDll) { Copy-Item -Path $luaDll -Destination (Join-Path $binDir '%s') -Force }
-]=],
-        path,
-        pkg_meta.executable_prefix,
-        string.sub(pkg_meta.executable_prefix, 4),
-        pkg_meta.wlua_prefix,
-        pkg_meta.dll_name,
-        pkg_meta.dll_name
-    )
+    local bin_dir = path .. "\\bin"
+    os.execute(string.format('if not exist "%s" mkdir "%s"', bin_dir, bin_dir))
 
-    local script_file = io.open(script_path, "w")
-    if script_file == nil then
-        error("failed to create temporary LuaBinaries install script")
+    local lua_exe = path .. "\\" .. pkg_meta.executable_prefix .. ".exe"
+    if not file_exists(lua_exe) then
+        error("LuaBinaries executable not found at " .. lua_exe)
     end
-    script_file:write(script_content)
-    script_file:close()
 
-    local powershell_script_path = string.gsub(script_path, "\\", "/")
-    powershell_script_path = string.gsub(powershell_script_path, "'", "''")
-    local cmd = string.format(
-        "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& '%s'\"",
-        powershell_script_path
-    )
-    local status = os.execute(cmd)
-    os.remove(script_path)
-    if not Utils.is_success_status(status) then
-        error("failed to prepare LuaBinaries files for Windows")
+    local copies = {
+        { src = lua_exe, dst = path .. "\\lua.exe" },
+        { src = lua_exe, dst = bin_dir .. "\\lua.exe" },
+    }
+
+    local luac_prefix = "luac" .. string.sub(pkg_meta.executable_prefix, 4)
+    local luac_exe = path .. "\\" .. luac_prefix .. ".exe"
+    if file_exists(luac_exe) then
+        table.insert(copies, { src = luac_exe, dst = path .. "\\luac.exe" })
+        table.insert(copies, { src = luac_exe, dst = bin_dir .. "\\luac.exe" })
+    end
+
+    local wlua_exe = path .. "\\" .. pkg_meta.wlua_prefix .. ".exe"
+    if file_exists(wlua_exe) then
+        table.insert(copies, { src = wlua_exe, dst = path .. "\\wlua.exe" })
+        table.insert(copies, { src = wlua_exe, dst = bin_dir .. "\\wlua.exe" })
+    end
+
+    local lua_dll = path .. "\\" .. pkg_meta.dll_name
+    if file_exists(lua_dll) then
+        table.insert(copies, { src = lua_dll, dst = bin_dir .. "\\" .. pkg_meta.dll_name })
+    end
+
+    for _, item in ipairs(copies) do
+        if not copy_file(item.src, item.dst) then
+            error("failed to copy " .. item.src .. " to " .. item.dst)
+        end
     end
 end
 
