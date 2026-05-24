@@ -105,7 +105,7 @@ luarocks install luacheck
 
 3. On Windows, use `PowerShell` to install Lua.
 
-4. `VFOX_LUA_WINDOWS_LUABINARIES=1` is a Windows-only opt-in. If the requested version is not published by LuaBinaries, the install will fail and you should use the default source-build flow instead.
+4. `VFOX_LUA_WINDOWS_LUABINARIES=1` is a Windows-only opt-in. If the requested version is not published by LuaBinaries, the install will fail and you should use the default source-build flow instead. The archive is downloaded from SourceForge's mirror autoselect over HTTPS; checksum verification is currently skipped because the redirected mirrors don't yield a stable hash. Prefer the default source-build flow if you require an integrity check.
 
 ## Known Issues
 

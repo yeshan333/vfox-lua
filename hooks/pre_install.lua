@@ -22,6 +22,11 @@ function PLUGIN:PreInstall(ctx)
         end
 
         print("lua download url: " .. pkg_meta.url)
+        -- LuaBinaries is distributed via SourceForge's mirror autoselect, which redirects to
+        -- a rotating set of mirrors. vfox computed checksums sometimes hashed the redirect HTML
+        -- instead of the archive bytes, so the integrity check was unreliable. Until upstream
+        -- publishes signed checksums we can pin, the opt-in install relies on HTTPS only —
+        -- documented as a trade-off in the README.
         return {
             version = lua_version,
             url = pkg_meta.url,
