@@ -146,11 +146,14 @@ function PLUGIN:PostInstall(ctx)
         error("lua install failed, please check the stdout for details.")
     end
 
-    -- Install LuaRocks (Unix only, Lua 5.x only, opt-in via VFOX_LUA_LUAROCKS=1)
+    -- Install LuaRocks by default on Unix for Lua 5.x+. Set VFOX_LUA_LUAROCKS=0/false to opt out.
     local luarocks_flag = os.getenv("VFOX_LUA_LUAROCKS")
+    local luarocks_disabled = luarocks_flag ~= nil and (
+        string.lower(luarocks_flag) == "0" or
+        string.lower(luarocks_flag) == "false"
+    )
     local major = tonumber(string.match(lua_version, "^(%d+)"))
-    if luarocks_flag and luarocks_flag ~= "0" and luarocks_flag ~= "false"
-        and major and major >= 5 and RUNTIME.osType ~= "windows" then
+    if not luarocks_disabled and major and major >= 5 and RUNTIME.osType ~= "windows" then
         local http = require("http")
         local json = require("json")
 
