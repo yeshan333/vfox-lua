@@ -254,9 +254,15 @@ jobs:
       - name: install Lua with default LuaRocks integration via mise
         env:
           LUA_VERSION: ${{ matrix.lua_version }}
+          PLUGIN_REF: ${{ github.head_ref || github.sha }}
         run: |
           curl https://mise.run | sh
           export PATH="$HOME/.local/bin:$PATH"
+
+          # Pin the plugin to this PR's ref so mise tests the branch under review,
+          # not whatever is on the default branch.
+          PLUGIN_NAME="vfox-$(echo '${{ github.repository }}' | tr '/' '-')"
+          $HOME/.local/bin/mise plugins install --force "$PLUGIN_NAME" "https://github.com/${{ github.repository }}.git#${PLUGIN_REF}"
 
           $HOME/.local/bin/mise use -g "vfox:${{ github.repository }}@$LUA_VERSION"
 
