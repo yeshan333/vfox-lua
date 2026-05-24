@@ -71,17 +71,17 @@ lua -v
 
 ### LuaRocks Integration
 
-LuaRocks can be automatically installed alongside Lua by setting the `VFOX_LUA_LUAROCKS` environment variable. This is supported on Linux and macOS only.
+LuaRocks is installed alongside Lua by default on Linux and macOS for Lua 5.x+.
 
 ```shell
 # vfox
-VFOX_LUA_LUAROCKS=1 vfox install lua@5.4.7
+vfox install lua@5.4.7
 
 # mise
-VFOX_LUA_LUAROCKS=1 mise use -g lua@5.4.7
+mise use -g lua@5.4.7
 ```
 
-When enabled, the plugin will:
+By default, the plugin will:
 
 1. Fetch the latest LuaRocks release from GitHub (fallback: 3.11.1)
 2. Build and bootstrap LuaRocks into `<install-dir>/luarocks/`
@@ -94,6 +94,8 @@ luarocks --version
 # install a rock
 luarocks install luacheck
 ```
+
+Set `VFOX_LUA_LUAROCKS=0` (or `false`) if you want to skip the LuaRocks install step.
 
 ## Notice
 

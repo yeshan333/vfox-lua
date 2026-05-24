@@ -215,10 +215,9 @@ jobs:
         run: |
           vfox add --source https://github.com/${{ github.repository_owner }}/vfox-lua/archive/${GITHUB_REF}.zip lua
 
-      - name: install Lua with LuaRocks
+      - name: install Lua with default LuaRocks integration
         env:
           LUA_VERSION: ${{ matrix.lua_version }}
-          VFOX_LUA_LUAROCKS: "1"
         run: |
           vfox install lua@$LUA_VERSION
           eval "$(vfox activate bash)"
@@ -252,13 +251,18 @@ jobs:
         run: |
           brew install readline
 
-      - name: install Lua with LuaRocks via mise
+      - name: install Lua with default LuaRocks integration via mise
         env:
           LUA_VERSION: ${{ matrix.lua_version }}
-          VFOX_LUA_LUAROCKS: "1"
+          PLUGIN_REF: ${{ github.head_ref || github.sha }}
         run: |
           curl https://mise.run | sh
           export PATH="$HOME/.local/bin:$PATH"
+
+          # Pin the plugin to this PR's ref so mise tests the branch under review,
+          # not whatever is on the default branch.
+          PLUGIN_NAME="vfox-$(echo '${{ github.repository }}' | tr '/' '-')"
+          $HOME/.local/bin/mise plugins install --force "$PLUGIN_NAME" "https://github.com/${{ github.repository }}.git#${PLUGIN_REF}"
 
           $HOME/.local/bin/mise use -g "vfox:${{ github.repository }}@$LUA_VERSION"
 
@@ -269,6 +273,68 @@ jobs:
           $HOME/.local/bin/mise exec -- luarocks --version
           $HOME/.local/bin/mise exec -- luarocks install luacheck
           $HOME/.local/bin/mise exec -- luarocks list | grep luacheck
+
+  luarocks_optout_tests:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        opt_out_value: ["0", "false"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '^1.24.2'
+
+      - name: build & install vfox
+        run: |
+          git clone https://github.com/version-fox/vfox.git
+          cd vfox
+          go build -o vfox
+          chmod +x vfox
+          cp vfox /usr/local/bin
+
+      - name: install readline lib (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get install libreadline-dev -y
+
+      - name: install readline lib (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          brew install readline
+
+      - name: add vfox-lua plugin
+        run: |
+          vfox add --source https://github.com/${{ github.repository_owner }}/vfox-lua/archive/${GITHUB_REF}.zip lua
+
+      - name: install Lua with LuaRocks opt-out
+        env:
+          LUA_VERSION: 5.4.7
+          VFOX_LUA_LUAROCKS: ${{ matrix.opt_out_value }}
+        run: |
+          vfox install lua@$LUA_VERSION
+          eval "$(vfox activate bash)"
+          vfox use -g lua@$LUA_VERSION
+          eval "$(vfox activate bash)"
+
+          echo "=== Verify Lua is installed ==="
+          lua -v | grep $LUA_VERSION
+
+          echo "=== Verify LuaRocks is NOT installed (VFOX_LUA_LUAROCKS=$VFOX_LUA_LUAROCKS) ==="
+          if command -v luarocks >/dev/null 2>&1; then
+            echo "FAIL: luarocks should NOT be on PATH when VFOX_LUA_LUAROCKS=$VFOX_LUA_LUAROCKS"
+            which luarocks
+            exit 1
+          fi
+
+          LUA_PREFIX=$(dirname $(dirname $(which lua)))
+          if [ -d "$LUA_PREFIX/luarocks" ]; then
+            echo "FAIL: $LUA_PREFIX/luarocks should not exist when opted out"
+            exit 1
+          fi
+          echo "OK: LuaRocks was correctly skipped"
 
   windows_luabinaries_tests:
     strategy:
