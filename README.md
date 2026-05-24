@@ -20,6 +20,10 @@ Lua [vfox](https://github.com/version-fox) plugin. Use the vfox to manage multip
   - GCC compiler
   - Make
 
+Optional on Windows:
+- Set `VFOX_LUA_WINDOWS_LUABINARIES=1` to install a prebuilt LuaBinaries package instead of compiling from source
+- Supported LuaBinaries versions: `5.5.0`, `5.4.8`, `5.3.6`, `5.2.4`
+
 ## Usage
 
 ### Install with vfox
@@ -36,6 +40,15 @@ vfox install lua@5.4.7
 
 # activate
 vfox use -g lua@5.4.7
+```
+
+On Windows, you can opt into prebuilt LuaBinaries packages instead of the default MSYS2 source build:
+
+```powershell
+$env:VFOX_LUA_WINDOWS_LUABINARIES=1
+vfox install lua@5.5.0
+vfox use -g lua@5.5.0
+lua -v
 ```
 
 ### Install with mise
@@ -91,6 +104,8 @@ luarocks install luacheck
    - macOS: `brew install readline`
 
 3. On Windows, use `PowerShell` to install Lua.
+
+4. `VFOX_LUA_WINDOWS_LUABINARIES=1` is a Windows-only opt-in. If the requested version is not published by LuaBinaries, the install will fail and you should use the default source-build flow instead. The archive is downloaded from SourceForge's mirror autoselect over HTTPS; checksum verification is currently skipped because the redirected mirrors don't yield a stable hash. Prefer the default source-build flow if you require an integrity check.
 
 ## Known Issues
 

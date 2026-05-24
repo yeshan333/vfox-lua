@@ -5,7 +5,7 @@
 function PLUGIN:EnvKeys(ctx)
     local sdkInfo = ctx.sdkInfo["lua"]
     local version = sdkInfo.version
-    local installDir = sdkInfo.path
+    local installDir = ctx.path
 
     local shortVersion = string.match(version, "^(%d+%.%d+)")
 
@@ -15,6 +15,21 @@ function PLUGIN:EnvKeys(ctx)
             value = installDir .. "/bin",
         },
     }
+
+    -- LuaBinaries installs place lua.exe in the install root next to the DLL; MSYS2 source
+    -- builds only populate bin/. Detect the LuaBinaries layout by probing the file so PATH
+    -- stays correct on `vfox use` even when VFOX_LUA_WINDOWS_LUABINARIES (an install-time
+    -- opt-in) is no longer exported in the activation shell.
+    if RUNTIME.osType == "windows" then
+        local rootLua = io.open(installDir .. "/lua.exe", "r")
+        if rootLua ~= nil then
+            rootLua:close()
+            table.insert(envs, 1, {
+                key = "PATH",
+                value = installDir,
+            })
+        end
+    end
 
     local luarocksBin = installDir .. "/luarocks/bin"
     local f = io.open(luarocksBin, "r")

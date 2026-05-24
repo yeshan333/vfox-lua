@@ -1,3 +1,5 @@
+local Utils = require("utils")
+
 --- Extension point, called after PreInstall, can perform additional operations,
 --- such as file operations for the SDK installation directory or compile source code
 function CheckBuildTools(osType)
@@ -22,6 +24,69 @@ Make sure make.exe and gcc.exe are in the System $env:PATH in PowerShell.
     end
 end
 
+local function copy_file(src, dst)
+    local input = io.open(src, "rb")
+    if input == nil then
+        return false
+    end
+    local content = input:read("*a")
+    input:close()
+
+    local output = io.open(dst, "wb")
+    if output == nil then
+        return false
+    end
+    output:write(content)
+    output:close()
+    return true
+end
+
+local function file_exists(path)
+    local f = io.open(path, "rb")
+    if f == nil then
+        return false
+    end
+    f:close()
+    return true
+end
+
+local function InstallWindowsLuaBinaries(path, lua_version)
+    local pkg_meta = Utils.get_windows_luabinaries_package(lua_version)
+    if pkg_meta == nil then
+        error("LuaBinaries package metadata missing for version " .. lua_version)
+    end
+
+    -- LuaBinaries archives expand executables (lua54.exe, luac54.exe, ...) into the install
+    -- root next to the DLL. We add aliases (lua.exe, luac.exe, wlua.exe) in the same folder
+    -- so users can invoke them by their canonical names. env_keys.lua already prepends the
+    -- install root to PATH, so a separate bin/ directory isn't needed.
+    local lua_exe = path .. "\\" .. pkg_meta.executable_prefix .. ".exe"
+    if not file_exists(lua_exe) then
+        error("LuaBinaries executable not found at " .. lua_exe)
+    end
+
+    local copies = {
+        { src = lua_exe, dst = path .. "\\lua.exe" },
+    }
+
+    local luac_prefix = "luac" .. string.sub(pkg_meta.executable_prefix, 4)
+    local luac_exe = path .. "\\" .. luac_prefix .. ".exe"
+    if file_exists(luac_exe) then
+        table.insert(copies, { src = luac_exe, dst = path .. "\\luac.exe" })
+    end
+
+    local wlua_exe = path .. "\\" .. pkg_meta.wlua_prefix .. ".exe"
+    if file_exists(wlua_exe) then
+        table.insert(copies, { src = wlua_exe, dst = path .. "\\wlua.exe" })
+    end
+
+    for _, item in ipairs(copies) do
+        if not copy_file(item.src, item.dst) then
+            error("failed to copy " .. item.src .. " to " .. item.dst)
+        end
+    end
+end
+
 
 function PLUGIN:PostInstall(ctx)
     --- ctx.rootPath SDK installation directory
@@ -31,6 +96,11 @@ function PLUGIN:PostInstall(ctx)
     local normalizedPath = string.gsub(path, "\\", "/")
     local lua_version = sdkInfo.version
     print(string.format("os type: %s, lua installed path: %s", RUNTIME.osType, path))
+
+    if RUNTIME.osType == "windows" and Utils.use_windows_luabinaries() then
+        InstallWindowsLuaBinaries(path, lua_version)
+        return
+    end
 
     CheckBuildTools(RUNTIME.osType)
     -- TODO: support install luajit
