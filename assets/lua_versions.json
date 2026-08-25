@@ -12,6 +12,12 @@
         "checksum (sha256)": "57ccc32bbbd005cab75bcc52444052535af691789dba2b9016d5c50640d68b3d"
     },
     {
+        "filename": "lua-5.4.9.tar.gz",
+        "date": "2026-08-10",
+        "size": "373429",
+        "checksum (sha256)": "2335b6c582a52654f94612bf10d2f4672805d05329aa6568b1d8cd9e5c6fb8e6"
+    },
+    {
         "filename": "lua-5.4.8.tar.gz",
         "date": "2025-05-21",
         "size": "374332",
@@ -277,22 +283,22 @@
     },
     {
         "filename": "lua-all.tar.gz",
-        "date": "2026-08-05",
-        "size": "6628325",
-        "checksum (sha256)": "8b1870be70b8dd316f6db6933a1c0f43a3918173cbe7cf9450af2cd7d2f7cd6d"
+        "date": "2026-08-25",
+        "size": "6870417",
+        "checksum (sha256)": "ae508efda3383cd1988f76ea9b01bdc3447f1c0be8b162634c745e9bac6f72d8"
     },
     {},
     {
         "filename": "refman-5.5.tar.gz",
-        "date": "2025-12-22",
-        "size": "132143",
-        "checksum (sha256)": "4f3eb7d97dc2809762a3f307dd83b0022bebf35474750ac794892a143908d18d"
+        "date": "2026-08-25",
+        "size": "132700",
+        "checksum (sha256)": "4b848ee1f027a32a316021de333f60e4e7658a3e9e861180ff00e29c70a62613"
     },
     {
         "filename": "refman-5.4.tar.gz",
-        "date": "2025-12-04",
-        "size": "136484",
-        "checksum (sha256)": "8caa91643fa3c09e3f16480f1e62ade4652dd387c0926fa9f8bdeddd99e5efa4"
+        "date": "2026-08-25",
+        "size": "127825",
+        "checksum (sha256)": "771dd1d90e7a63d32e310a9e014dda7e50417a34c0b70c6b891e6708a4a29a57"
     },
     {
         "filename": "refman-5.3.tar.gz",
