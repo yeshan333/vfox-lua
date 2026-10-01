@@ -1,5 +1,35 @@
 # Developer Guide
 
+## Test and debug hooks
+
+The offline tests use `vfox plugin test` and `require("vfox.test")`, with fixture HTTP
+responses and explicit environment overrides. Shell commands are stubbed; the suite
+covers download selection, network errors, build failure, LuaRocks opt-out and cleanup,
+Windows executable aliases, and activation paths.
+
+These commands are on the vfox development branch and are not included in stable
+v1.0.12. CI builds revision `930f5be15338fa1e330e5148d9670f8df8a3c9a4` for the
+hook tests. Build that revision to run the same checks locally:
+
+```shell
+git clone https://github.com/version-fox/vfox.git /tmp/vfox-tests
+git -C /tmp/vfox-tests checkout 930f5be15338fa1e330e5148d9670f8df8a3c9a4
+(cd /tmp/vfox-tests && go build -o /tmp/vfox-test-runner .)
+/tmp/vfox-test-runner plugin test .
+/tmp/vfox-test-runner plugin run . PreInstall --input '{"version":"5.4.7"}' --json
+```
+
+`plugin run` permits real HTTP and shell commands. For installation verification,
+use a disposable runner or VM. CI separately tests real installs with stable vfox
+v1.0.12 on Linux, macOS and Windows, plus mise on Linux and macOS. It installs the
+checked-out plugin, so the PR's actual contents are tested.
+
+The `files` helper uses native `fs.copy`/`fs.remove` on vfox and keeps a fallback for
+mise, which does not yet provide `fs`. mise's Lua 5.1 async functions cannot yield
+through `pcall`, so its HTTP `try_get`/`try_download_file` APIs return errors directly.
+Optional LuaRocks extraction uses a quoted `tar` fallback on mise; vfox uses its
+native archive library. Both extract into a dedicated source directory.
+
 ## Lua in Windows
 
 ```powershell

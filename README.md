@@ -12,6 +12,8 @@ Lua [vfox](https://github.com/version-fox) plugin. Use the vfox to manage multip
 
 ## Requirements
 
+- vfox 1.0.12 or newer (mise remains supported through the compatibility path)
+
 - macOS / Linux
   - GNU Make
   - ANSI C compiler (gcc or clang)
@@ -41,6 +43,16 @@ vfox install lua@5.4.7
 # activate
 vfox use -g lua@5.4.7
 ```
+
+For CI, scripts, and IDE commands, use `exec` to run with an explicit Lua version:
+
+```shell
+vfox exec lua@5.4.7 -- lua -v
+vfox exec lua@5.4.7 -- luarocks --version
+```
+
+Pin a project's Lua version with `vfox use -p lua@5.4.7`. vfox records the version in
+`.vfox.toml` and creates a stable `.vfox/sdks/lua` path for the project.
 
 On Windows, you can opt into prebuilt LuaBinaries packages instead of the default MSYS2 source build:
 
@@ -86,6 +98,18 @@ By default, the plugin will:
 1. Fetch the latest LuaRocks release from GitHub (fallback: 3.11.1)
 2. Build and bootstrap LuaRocks into `<install-dir>/luarocks/`
 3. Add `luarocks` to `PATH` and configure `LUA_INIT` so that installed rocks are immediately available
+
+Downloads use the runtime's HTTP library. vfox uses its native archive and file
+operations; mise uses a compatible `tar` extraction and file cleanup path. Temporary build
+artifacts are cleaned up after success or failure. If LuaRocks cannot be installed, the
+plugin prints a warning and keeps the Lua installation usable.
+
+With vfox, network timeouts can be configured using:
+
+```shell
+vfox config plugin.http.timeout 60s
+vfox config plugin.http.downloadTimeout 45m
+```
 
 ```shell
 # verify
