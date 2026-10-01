@@ -1,0 +1,18 @@
+local plugin = require("vfox.test").load({ os = "windows", env = { VFOX_LUA_WINDOWS_LUABINARIES = "1" } })
+local fs = require("fs")
+local h = dofile(RUNTIME.pluginDirPath .. "/tests/helpers.lua")
+local path = os.tmpname()
+os.remove(path)
+fs.copy(RUNTIME.pluginDirPath .. "/tests/fixtures/windows", path)
+local ok, err = pcall(function()
+    h.scenario("Windows prebuilt installation copies canonical lua, luac and wlua aliases with native fs", function()
+        plugin:PostInstall({ sdkInfo = { lua = { path = path, version = "5.4.8" } } })
+        for _, executable in ipairs({ "lua", "luac", "wlua" }) do
+            local file = assert(io.open(path .. "/" .. executable .. ".exe", "rb"))
+            assert(file:read("*a") == "fixture for " .. executable .. "54.exe\n")
+            file:close()
+        end
+    end)
+end)
+fs.remove(path)
+assert(ok, err)
