@@ -5,7 +5,7 @@
 function PLUGIN:EnvKeys(ctx)
     local sdkInfo = ctx.sdkInfo["lua"]
     local version = sdkInfo.version
-    local installDir = ctx.path
+    local installDir = string.gsub(ctx.path, "\\", "/")
 
     local shortVersion = string.match(version, "^(%d+%.%d+)")
 
@@ -32,7 +32,7 @@ function PLUGIN:EnvKeys(ctx)
     end
 
     local luarocksBin = installDir .. "/luarocks/bin"
-    local f = io.open(luarocksBin, "r")
+    local f = io.open(luarocksBin .. "/luarocks", "r")
     if f ~= nil then
         f:close()
         table.insert(envs, {
@@ -42,7 +42,7 @@ function PLUGIN:EnvKeys(ctx)
 
         if shortVersion then
             local packagePath = string.format(
-                "package.path = package.path .. ';%s/share/lua/%s/?.lua;%s/share/lua/%s/?/init.lua;%s/luarocks/share/lua/%s/?.lua;%s/luarocks/share/lua/%s/?/init.lua'",
+                ";%s/share/lua/%s/?.lua;%s/share/lua/%s/?/init.lua;%s/luarocks/share/lua/%s/?.lua;%s/luarocks/share/lua/%s/?/init.lua",
                 installDir,
                 shortVersion,
                 installDir,
@@ -53,7 +53,7 @@ function PLUGIN:EnvKeys(ctx)
                 shortVersion
             )
             local packageCpath = string.format(
-                "package.cpath = package.cpath .. ';%s/lib/lua/%s/?.so;%s/luarocks/lib/lua/%s/?.so'",
+                ";%s/lib/lua/%s/?.so;%s/luarocks/lib/lua/%s/?.so",
                 installDir,
                 shortVersion,
                 installDir,
@@ -62,7 +62,8 @@ function PLUGIN:EnvKeys(ctx)
 
             table.insert(envs, {
                 key = "LUA_INIT",
-                value = packagePath .. "\n" .. packageCpath,
+                value = "package.path = package.path .. " .. string.format("%q", packagePath) ..
+                    "\npackage.cpath = package.cpath .. " .. string.format("%q", packageCpath),
             })
         end
     end
