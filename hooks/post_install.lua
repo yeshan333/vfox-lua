@@ -1,10 +1,11 @@
 local Utils = require("utils")
 local Files = require("files")
 local LuaRocks = require("luarocks")
+local Windows = require("windows")
 
 local function check_windows_build_tools()
     for _, tool in ipairs({ "make.exe", "gcc.exe" }) do
-        local status = os.execute('powershell -NoProfile -Command "Get-Command ' .. tool .. ' -ErrorAction Stop"')
+        local status = Windows.execute("$ErrorActionPreference = 'Stop'; Get-Command " .. tool .. " -ErrorAction Stop")
         if not Utils.is_success_status(status) then
             error("Build tool " .. tool .. " not found. Install make and gcc via MSYS2 and add them to PATH.")
         end
@@ -38,14 +39,14 @@ function PLUGIN:PostInstall(ctx)
     local command
     if RUNTIME.osType == "windows" then
         check_windows_build_tools()
-        local ps_path = string.gsub(path, "'", "''")
-        local install_top = string.gsub(ps_path, "\\", "/")
-        command = 'powershell -NoProfile -Command "& { $ErrorActionPreference = \'Stop\'; ' ..
-            "Set-Location -LiteralPath '" .. ps_path .. "'; make mingw; " ..
+        local script = "$ErrorActionPreference = 'Stop'; $prefix = " .. Windows.path_expression(path) .. "; " ..
+            "Set-Location -LiteralPath $prefix; make mingw; " ..
             "if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; " ..
-            "make install 'INSTALL_TOP=" .. install_top .. "'; " ..
+            "make install ('INSTALL_TOP=' + $prefix.Replace('\\', '/')); " ..
             "if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; " ..
-            "Copy-Item -Path 'src\\*.dll' -Destination 'bin' -Force }" .. '"'
+            "Copy-Item -Path 'src\\*.dll' -Destination 'bin' -Force"
+        assert(Utils.is_success_status(Windows.execute(script)), "Lua build/install failed; check the output above.")
+        return
     elseif RUNTIME.osType == "linux" or RUNTIME.osType == "darwin" then
         local major, minor = string.match(version, "^(%d+)%.(%d+)")
         major, minor = tonumber(major), tonumber(minor)

@@ -9,8 +9,12 @@ local ok, err = pcall(function()
         plugin:PostInstall({ sdkInfo = { lua = { path = path, version = "5.4.8" } } })
         for _, executable in ipairs({ "lua", "luac", "wlua" }) do
             local file = assert(io.open(path .. "/" .. executable .. ".exe", "rb"))
-            assert(file:read("*a") == "fixture for " .. executable .. "54.exe\n")
+            local actual = file:read("*a")
             file:close()
+            local source = assert(io.open(path .. "/" .. executable .. "54.exe", "rb"))
+            local expected = source:read("*a")
+            source:close()
+            assert(actual == expected, "copied alias must preserve the original executable bytes")
         end
     end)
 end)
