@@ -14,7 +14,37 @@ on:
       - 'assets/**'
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
+  plugin_tests:
+    name: Offline hook tests (${{ matrix.os }})
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.26.4'
+      - name: Build the pinned vfox plugin test runner
+        shell: bash
+        env:
+          # plugin test/run are not in v1.0.12; pin the reviewed development revision.
+          VFOX_TEST_REF: 930f5be15338fa1e330e5148d9670f8df8a3c9a4
+        run: |
+          git init "$RUNNER_TEMP/vfox-tests"
+          git -C "$RUNNER_TEMP/vfox-tests" remote add origin https://github.com/version-fox/vfox.git
+          git -C "$RUNNER_TEMP/vfox-tests" fetch --depth 1 origin "$VFOX_TEST_REF"
+          git -C "$RUNNER_TEMP/vfox-tests" checkout --detach FETCH_HEAD
+          cd "$RUNNER_TEMP/vfox-tests"
+          go build -o "$RUNNER_TEMP/vfox-test-runner.exe" .
+      - name: Verify Lua hooks offline without installing an SDK
+        shell: bash
+        run: '"$RUNNER_TEMP/vfox-test-runner.exe" plugin test "$GITHUB_WORKSPACE"'
+
   e2e_tests:
     strategy:
       matrix:
@@ -27,12 +57,12 @@ jobs:
 
       - uses: actions/setup-go@v5
         with:
-          go-version: '^1.24.2' # The Go version to download (if necessary) and use.
+          go-version: '1.26.4' # The Go version to download (if necessary) and use.
 
       - name: build & install vfox (Unix-like)
         if: runner.os != 'Windows'
         run: |
-          git clone https://github.com/version-fox/vfox.git
+          git clone --depth 1 --branch v1.0.12 https://github.com/version-fox/vfox.git
           cd vfox
           go build -o vfox
           chmod +x vfox
@@ -41,7 +71,7 @@ jobs:
       - name: build & install vfox (Windows)
         if: runner.os == 'Windows'
         run: |
-          git clone https://github.com/version-fox/vfox.git
+          git clone --depth 1 --branch v1.0.12 https://github.com/version-fox/vfox.git
           cd vfox
           go build -o vfox.exe
           echo "$pwd" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
@@ -57,90 +87,56 @@ jobs:
         run: |
           brew install readline
 
+      - name: Package the checked-out plugin
+        shell: bash
+        run: 'git archive --format=zip --output="$RUNNER_TEMP/vfox-lua.zip" HEAD'
+
       - name: add vfox-lua plugin
         if: runner.os == 'Windows'
         run: |
-          vfox add --source "https://github.com/${{ github.repository_owner }}/vfox-lua/archive/${env:GITHUB_REF}.zip" lua
+          vfox add --source "$env:RUNNER_TEMP/vfox-lua.zip" lua
 
       - name: add vfox-lua plugin
         if: runner.os != 'Windows'
         run: |
-          vfox add --source https://github.com/${{ github.repository_owner }}/vfox-lua/archive/${GITHUB_REF}.zip lua
+          vfox add --source "$RUNNER_TEMP/vfox-lua.zip" lua
 
-      - name: install lua by vfox-lua plugin (Linux)
-        if: runner.os == 'Linux'
+      - name: Install and run the requested Lua version (Unix)
+        if: runner.os != 'Windows'
         env:
           LUA_VERSION: ${{ matrix.lua_version }}
         run: |
-          vfox install lua@$LUA_VERSION
-          eval "$(vfox activate bash)"
-          vfox use -g lua@$LUA_VERSION
-          eval "$(vfox activate bash)"
-          echo "===============PATH==============="
-          echo $PATH
-          echo "===============PATH==============="
-          status=$(lua -v | grep $LUA_VERSION)
-          if [ -z "$status" ]; then
-            echo "Lua version is not $LUA_VERSION"
-            exit 1
-          else
-            echo "Lua version $LUA_VERSION installed successfully"
-          fi
+          vfox install "lua@$LUA_VERSION"
+          vfox exec "lua@$LUA_VERSION" -- lua -v | grep -F "$LUA_VERSION"
 
-      - name: install latest lua by vfox-lua plugin (Linux)
+      - name: Install and run the latest Lua release (Linux)
         if: runner.os == 'Linux' && matrix.lua_version == '5.5.0'
         run: |
           vfox install lua@latest
-          eval "$(vfox activate bash)"
-          vfox use -g lua@latest
-          eval "$(vfox activate bash)"
-          lua -v | grep '^Lua [0-9]'
+          LATEST_VERSION=$(vfox list lua | sed -n 's/.*\(5\.[0-9]*\.[0-9]*\).*/\1/p' | sort -V | tail -1)
+          vfox exec "lua@$LATEST_VERSION" -- lua -v | grep '^Lua [0-9]'
 
-      - name: verify liblua.a is compiled with -fPIC (Linux)
-        if: runner.os == 'Linux'
+      - name: Project selection resolves Lua for exec without an explicit version
+        if: runner.os != 'Windows' && matrix.lua_version == '5.4.7'
         env:
           LUA_VERSION: ${{ matrix.lua_version }}
         run: |
           eval "$(vfox activate bash)"
-          vfox use -g lua@$LUA_VERSION
-          eval "$(vfox activate bash)"
-          LUA_PREFIX=$(dirname $(dirname $(which lua)))
-          echo "Checking $LUA_PREFIX/lib/liblua.a"
-          gcc -shared -o /dev/null -Wl,--whole-archive "$LUA_PREFIX/lib/liblua.a" -Wl,--no-whole-archive -lm -ldl
-          echo "liblua.a is compiled with -fPIC"
+          vfox use -p "lua@$LUA_VERSION"
+          vfox exec lua -- lua -v | grep -F "$LUA_VERSION"
 
-      - name: install lua by vfox-lua plugin (Darwin)
-        if: runner.os == 'MacOS'
+      - name: Verify Lua static library supports shared modules (Unix)
+        if: runner.os != 'Windows'
         env:
           LUA_VERSION: ${{ matrix.lua_version }}
         run: |
-          vfox install lua@$LUA_VERSION
-          eval "$(vfox activate bash)"
-          vfox use -g lua@$LUA_VERSION
-          eval "$(vfox activate bash)"
-          echo "===============PATH==============="
-          echo $PATH
-          echo "===============PATH==============="
-          status=$(lua -v | grep $LUA_VERSION)
-          if [ -z "$status" ]; then
-            echo "Lua version is not @$LUA_VERSION"
-            exit 1
+          LUA_PACKAGE=$(vfox info "lua@$LUA_VERSION")
+          LUA_PREFIX="$LUA_PACKAGE/lua-$LUA_VERSION"
+          if [ "${{ runner.os }}" = "Linux" ]; then
+            gcc -shared -o /dev/null -Wl,--whole-archive "$LUA_PREFIX/lib/liblua.a" -Wl,--no-whole-archive -lm -ldl
           else
-            echo "Lua version $LUA_VERSION installed successfully"
+            cc -dynamiclib -o /dev/null -Wl,-force_load,"$LUA_PREFIX/lib/liblua.a" -lm
           fi
-
-      - name: verify liblua.a is compiled with -fPIC (macOS)
-        if: runner.os == 'MacOS'
-        env:
-          LUA_VERSION: ${{ matrix.lua_version }}
-        run: |
-          eval "$(vfox activate bash)"
-          vfox use -g lua@$LUA_VERSION
-          eval "$(vfox activate bash)"
-          LUA_PREFIX=$(dirname $(dirname $(which lua)))
-          echo "Checking $LUA_PREFIX/lib/liblua.a"
-          cc -dynamiclib -o /dev/null -Wl,-force_load,"$LUA_PREFIX/lib/liblua.a" -lm
-          echo "liblua.a is compiled with -fPIC"
 
       - name: Setup MSYS2 (Windows)
         uses: msys2/setup-msys2@v2
@@ -148,36 +144,28 @@ jobs:
         with:
           msystem: MINGW64
           update: true
+          path-type: inherit
           install: >
             mingw-w64-x86_64-gcc
             mingw-w64-x86_64-make
 
-      - name: Verify GCC and Make installation (Windows)
-        shell: pwsh
+      - name: Add Windows build tools to PATH
         if: runner.os == 'Windows'
+        shell: pwsh
         run: |
-          gcc --version
-          make --version
+          "C:\msys64\mingw64\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
-      - name: install Lua by vfox-lua plugin (Windows)
+      - name: Install and run the requested Lua version (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
         env:
-          LUA_VERSION: "${{ matrix.lua_version }}"
+          LUA_VERSION: ${{ matrix.lua_version }}
         run: |
           vfox install "lua@$env:LUA_VERSION"
-          Invoke-Expression "$(vfox activate pwsh)"
-          vfox use -g "lua@$env:LUA_VERSION"
-          Invoke-Expression "$(vfox activate pwsh)"
-          echo "===============PATH==============="
-          echo $env:PATH
-          echo "===============PATH==============="
-          $result=(lua.exe -v)
-          if ($result -match "Lua $env:LUA_VERSION") {
-              Write-Output "lua@$env:LUA_VERSION installed successfully!"
-          } else {
-              Write-Output "lua@$env:LUA_VERSION installed failed!"
-              exit 1
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $result = vfox exec "lua@$env:LUA_VERSION" -- lua.exe -v
+          if ($LASTEXITCODE -ne 0 -or $result -notmatch "Lua $([regex]::Escape($env:LUA_VERSION))") {
+            throw "Unexpected Lua version: $result"
           }
 
   luarocks_tests:
@@ -191,11 +179,11 @@ jobs:
 
       - uses: actions/setup-go@v5
         with:
-          go-version: '^1.24.2'
+          go-version: '1.26.4'
 
       - name: build & install vfox
         run: |
-          git clone https://github.com/version-fox/vfox.git
+          git clone --depth 1 --branch v1.0.12 https://github.com/version-fox/vfox.git
           cd vfox
           go build -o vfox
           chmod +x vfox
@@ -211,26 +199,27 @@ jobs:
         run: |
           brew install readline
 
+      - name: Package the checked-out plugin
+        shell: bash
+        run: 'git archive --format=zip --output="$RUNNER_TEMP/vfox-lua.zip" HEAD'
+
       - name: add vfox-lua plugin
         run: |
-          vfox add --source https://github.com/${{ github.repository_owner }}/vfox-lua/archive/${GITHUB_REF}.zip lua
+          vfox add --source "$RUNNER_TEMP/vfox-lua.zip" lua
 
       - name: install Lua with default LuaRocks integration
         env:
           LUA_VERSION: ${{ matrix.lua_version }}
         run: |
           vfox install lua@$LUA_VERSION
-          eval "$(vfox activate bash)"
-          vfox use -g lua@$LUA_VERSION
-          eval "$(vfox activate bash)"
 
           echo "=== Verify Lua ==="
-          lua -v | grep $LUA_VERSION
+          vfox exec "lua@$LUA_VERSION" -- lua -v | grep -F "$LUA_VERSION"
 
           echo "=== Verify LuaRocks ==="
-          luarocks --version
-          luarocks install luacheck
-          luarocks list | grep luacheck
+          vfox exec "lua@$LUA_VERSION" -- luarocks --version
+          vfox exec "lua@$LUA_VERSION" -- luarocks install luacheck
+          vfox exec "lua@$LUA_VERSION" -- luarocks list | grep luacheck
 
   mise_luarocks_tests:
     strategy:
@@ -285,11 +274,11 @@ jobs:
 
       - uses: actions/setup-go@v5
         with:
-          go-version: '^1.24.2'
+          go-version: '1.26.4'
 
       - name: build & install vfox
         run: |
-          git clone https://github.com/version-fox/vfox.git
+          git clone --depth 1 --branch v1.0.12 https://github.com/version-fox/vfox.git
           cd vfox
           go build -o vfox
           chmod +x vfox
@@ -305,9 +294,13 @@ jobs:
         run: |
           brew install readline
 
+      - name: Package the checked-out plugin
+        shell: bash
+        run: 'git archive --format=zip --output="$RUNNER_TEMP/vfox-lua.zip" HEAD'
+
       - name: add vfox-lua plugin
         run: |
-          vfox add --source https://github.com/${{ github.repository_owner }}/vfox-lua/archive/${GITHUB_REF}.zip lua
+          vfox add --source "$RUNNER_TEMP/vfox-lua.zip" lua
 
       - name: install Lua with LuaRocks opt-out
         env:
@@ -315,21 +308,19 @@ jobs:
           VFOX_LUA_LUAROCKS: ${{ matrix.opt_out_value }}
         run: |
           vfox install lua@$LUA_VERSION
-          eval "$(vfox activate bash)"
-          vfox use -g lua@$LUA_VERSION
-          eval "$(vfox activate bash)"
 
           echo "=== Verify Lua is installed ==="
-          lua -v | grep $LUA_VERSION
+          vfox exec "lua@$LUA_VERSION" -- lua -v | grep -F "$LUA_VERSION"
 
           echo "=== Verify LuaRocks is NOT installed (VFOX_LUA_LUAROCKS=$VFOX_LUA_LUAROCKS) ==="
-          if command -v luarocks >/dev/null 2>&1; then
+          if vfox exec "lua@$LUA_VERSION" -- sh -c 'command -v luarocks' >/dev/null 2>&1; then
             echo "FAIL: luarocks should NOT be on PATH when VFOX_LUA_LUAROCKS=$VFOX_LUA_LUAROCKS"
-            which luarocks
+            vfox exec "lua@$LUA_VERSION" -- sh -c 'command -v luarocks'
             exit 1
           fi
 
-          LUA_PREFIX=$(dirname $(dirname $(which lua)))
+          LUA_PACKAGE=$(vfox info "lua@$LUA_VERSION")
+          LUA_PREFIX="$LUA_PACKAGE/lua-$LUA_VERSION"
           if [ -d "$LUA_PREFIX/luarocks" ]; then
             echo "FAIL: $LUA_PREFIX/luarocks should not exist when opted out"
             exit 1
@@ -346,21 +337,25 @@ jobs:
 
       - uses: actions/setup-go@v5
         with:
-          go-version: '^1.24.2'
+          go-version: '1.26.4'
 
       - name: build & install vfox
         shell: pwsh
         run: |
-          git clone https://github.com/version-fox/vfox.git
+          git clone --depth 1 --branch v1.0.12 https://github.com/version-fox/vfox.git
           cd vfox
           go build -o vfox.exe
           echo "$pwd" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
           ./vfox.exe -version
 
+      - name: Package the checked-out plugin
+        shell: bash
+        run: 'git archive --format=zip --output="$RUNNER_TEMP/vfox-lua.zip" HEAD'
+
       - name: add vfox-lua plugin
         shell: pwsh
         run: |
-          vfox add --source "https://github.com/${{ github.repository_owner }}/vfox-lua/archive/${env:GITHUB_REF}.zip" lua
+          vfox add --source "$env:RUNNER_TEMP/vfox-lua.zip" lua
 
       - name: install Lua from LuaBinaries by vfox-lua plugin
         shell: pwsh
@@ -369,14 +364,11 @@ jobs:
           VFOX_LUA_WINDOWS_LUABINARIES: "1"
         run: |
           vfox install "lua@$env:LUA_VERSION"
-          Invoke-Expression "$(vfox activate pwsh)"
-          vfox use -g "lua@$env:LUA_VERSION"
-          Invoke-Expression "$(vfox activate pwsh)"
-          echo "===============PATH==============="
-          echo $env:PATH
-          echo "===============PATH==============="
-          $luaVersion = lua.exe -v
-          $luacVersion = luac.exe -v
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $luaVersion = vfox exec "lua@$env:LUA_VERSION" -- lua.exe -v
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $luacVersion = vfox exec "lua@$env:LUA_VERSION" -- luac.exe -v
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           if ($luaVersion -notmatch "Lua $env:LUA_VERSION") {
               Write-Output "lua@$env:LUA_VERSION installed from LuaBinaries failed!"
               exit 1
