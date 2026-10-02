@@ -35,8 +35,9 @@ jobs:
       - name: build & install vfox (Unix-like)
         if: runner.os != 'Windows'
         run: |
-          git clone --depth 1 --branch v1.0.12 https://github.com/version-fox/vfox.git
+          git clone --depth 1 --branch main https://github.com/version-fox/vfox.git
           cd vfox
+          git log -1 --format=%H
           go build -o vfox
           chmod +x vfox
           cp vfox /usr/local/bin
@@ -44,8 +45,9 @@ jobs:
       - name: build & install vfox (Windows)
         if: runner.os == 'Windows'
         run: |
-          git clone --depth 1 --branch v1.0.12 https://github.com/version-fox/vfox.git
+          git clone --depth 1 --branch main https://github.com/version-fox/vfox.git
           cd vfox
+          git log -1 --format=%H
           go build -o vfox.exe
           echo "$pwd" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
           ./vfox.exe -version
@@ -81,6 +83,14 @@ jobs:
         run: |
           vfox install "lua@$LUA_VERSION"
           vfox exec "lua@$LUA_VERSION" -- lua -v | grep -F "$LUA_VERSION"
+
+      - name: The installed Lua passes its Busted E2E specifications (Unix)
+        if: runner.os != 'Windows'
+        env:
+          LUA_VERSION: ${{ matrix.lua_version }}
+        run: |
+          vfox exec "lua@$LUA_VERSION" -- luarocks install busted
+          vfox exec "lua@$LUA_VERSION" -- busted --verbose spec/e2e
 
       - name: Install and run the latest Lua release (Linux)
         if: runner.os == 'Linux' && matrix.lua_version == '5.5.0'
@@ -156,8 +166,9 @@ jobs:
 
       - name: build & install vfox
         run: |
-          git clone --depth 1 --branch v1.0.12 https://github.com/version-fox/vfox.git
+          git clone --depth 1 --branch main https://github.com/version-fox/vfox.git
           cd vfox
+          git log -1 --format=%H
           go build -o vfox
           chmod +x vfox
           cp vfox /usr/local/bin
@@ -193,6 +204,13 @@ jobs:
           vfox exec "lua@$LUA_VERSION" -- luarocks --version
           vfox exec "lua@$LUA_VERSION" -- luarocks install luacheck
           vfox exec "lua@$LUA_VERSION" -- luarocks list | grep luacheck
+
+      - name: Lua with default LuaRocks passes its Busted E2E specifications
+        env:
+          LUA_VERSION: ${{ matrix.lua_version }}
+        run: |
+          vfox exec "lua@$LUA_VERSION" -- luarocks install busted
+          vfox exec "lua@$LUA_VERSION" -- busted --verbose spec/e2e
 
   mise_luarocks_tests:
     strategy:
@@ -236,6 +254,14 @@ jobs:
           $HOME/.local/bin/mise exec -- luarocks install luacheck
           $HOME/.local/bin/mise exec -- luarocks list | grep luacheck
 
+      - name: Lua installed through mise passes its Busted E2E specifications
+        env:
+          LUA_VERSION: ${{ matrix.lua_version }}
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          mise exec -- luarocks install busted
+          mise exec -- busted --verbose spec/e2e
+
   luarocks_optout_tests:
     strategy:
       matrix:
@@ -251,8 +277,9 @@ jobs:
 
       - name: build & install vfox
         run: |
-          git clone --depth 1 --branch v1.0.12 https://github.com/version-fox/vfox.git
+          git clone --depth 1 --branch main https://github.com/version-fox/vfox.git
           cd vfox
+          git log -1 --format=%H
           go build -o vfox
           chmod +x vfox
           cp vfox /usr/local/bin
@@ -315,8 +342,9 @@ jobs:
       - name: build & install vfox
         shell: pwsh
         run: |
-          git clone --depth 1 --branch v1.0.12 https://github.com/version-fox/vfox.git
+          git clone --depth 1 --branch main https://github.com/version-fox/vfox.git
           cd vfox
+          git log -1 --format=%H
           go build -o vfox.exe
           echo "$pwd" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
           ./vfox.exe -version

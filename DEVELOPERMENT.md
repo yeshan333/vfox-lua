@@ -2,11 +2,28 @@
 
 ## End-to-end installation tests
 
-The E2E workflow tests real installs with stable vfox v1.0.12 on Linux, macOS and
-Windows, plus mise on Linux and macOS. It installs the checked-out plugin, so the
-PR's actual contents are tested. Commands run through `vfox exec` or `mise exec`
-to verify the installed Lua and LuaRocks versions. CI also covers Windows
-LuaBinaries, LuaRocks opt-out, project version selection and static library linking.
+The E2E workflow builds the latest commit on vfox's `main` branch for every run
+and prints the tested commit SHA in the build log. It tests real installs on
+Linux, macOS and Windows, plus mise on Linux and macOS. It installs the checked-out
+plugin, so the PR's actual contents are tested. CI also covers Windows LuaBinaries,
+LuaRocks opt-out, project version selection and static library linking.
+
+Lua specifications use Busted and run against the installed SDK through `vfox exec`
+or `mise exec`. The specifications verify the requested Lua version, compilation
+and execution of bytecode, and loading a native LuaRocks module. On Unix, run:
+
+```shell
+export LUA_VERSION=5.4.7
+vfox exec "lua@$LUA_VERSION" -- luarocks install busted
+vfox exec "lua@$LUA_VERSION" -- busted --verbose spec/e2e
+
+# For a Lua SDK installed through mise:
+mise exec -- luarocks install busted
+mise exec -- busted --verbose spec/e2e
+```
+
+Windows installation and LuaRocks opt-out scenarios use command-line E2E checks,
+since those installations do not include LuaRocks.
 
 Use a disposable runner or VM when reproducing the installation steps from
 `.github/workflows/e2e_test.yaml`.
