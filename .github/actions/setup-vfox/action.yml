@@ -1,0 +1,33 @@
+name: Build vfox main and add the checked-out Lua plugin
+description: Build the latest vfox main commit and install this checkout as its Lua plugin.
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@v4
+      with:
+        repository: version-fox/vfox
+        ref: main
+        path: .vfox-source
+
+    - uses: actions/setup-go@v5
+      with:
+        go-version: '1.26.4'
+        cache-dependency-path: .vfox-source/go.sum
+
+    - name: Build the latest vfox main commit
+      shell: bash
+      working-directory: .vfox-source
+      run: |
+        git log -1 --format=%H
+        binary=vfox
+        if [ "$RUNNER_OS" = Windows ]; then binary=vfox.exe; fi
+        mkdir -p "$RUNNER_TEMP/vfox-bin"
+        go build -o "$RUNNER_TEMP/vfox-bin/$binary"
+        echo "$RUNNER_TEMP/vfox-bin" >> "$GITHUB_PATH"
+
+    - name: Add the checked-out Lua plugin
+      shell: bash
+      run: |
+        git archive --format=zip --output="$RUNNER_TEMP/vfox-lua.zip" HEAD
+        vfox -version
+        vfox add --source "$RUNNER_TEMP/vfox-lua.zip" lua
