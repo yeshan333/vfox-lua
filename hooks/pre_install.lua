@@ -7,7 +7,6 @@ local Utils = require("utils")
 --- @return table Version information
 function PLUGIN:PreInstall(ctx)
     local lua_version = ctx.version
-    local download_url
 
     if RUNTIME.osType == "windows" and Utils.use_windows_luabinaries() then
         local pkg_meta = Utils.get_windows_luabinaries_package(lua_version)
@@ -36,9 +35,7 @@ function PLUGIN:PreInstall(ctx)
     if not Utils.check_readline_installed() then
         error("readline library not found. Install libreadline-dev/readline-devel (Linux) or brew install readline (macOS).")
     end
-    -- https://www.lua.org/ftp/lua-4.0.tar.gz
-    -- https://www.lua.org/ftp/lua-all.tar.gz
-    download_url = "https://www.lua.org/ftp/lua-" .. lua_version .. ".tar.gz"
+    local download_url = "https://www.lua.org/ftp/lua-" .. lua_version .. ".tar.gz"
     print("lua download url: " .. download_url)
 
     return {

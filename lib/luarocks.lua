@@ -25,12 +25,20 @@ local function release_version()
     return fallback_version
 end
 
+local function cleanup(path)
+    local removed, err = pcall(Files.remove, path)
+    if not removed then
+        print("Warning: could not clean up " .. path .. ": " .. tostring(err))
+    end
+end
+
 function luarocks.install(path)
     local version = release_version()
     local archive = path .. "/luarocks.tar.gz"
     local source = path .. "/luarocks-source"
     local prefix = path .. "/luarocks"
     local extract_started, bootstrap_started = false, false
+    local quote = Files.shell_quote
     local request = {
         url = "https://github.com/luarocks/luarocks/archive/refs/tags/v" .. version .. ".tar.gz",
     }
@@ -53,22 +61,19 @@ function luarocks.install(path)
             else
                 -- mise's async archiver also cannot yield inside pcall. Use a quoted
                 -- tar command here so optional extraction failures still preserve Lua.
-                local quote = Files.shell_quote
                 local command = "mkdir -p " .. quote(source) .. " && tar xzf " .. quote(archive) ..
                     " -C " .. quote(source) .. " --strip-components=1"
                 assert(Utils.is_success_status(os.execute(command)), "LuaRocks extraction failed")
             end
-            local build_dir = source
-            assert(Files.exists(build_dir .. "/configure"), "LuaRocks configure script not found")
-            local quote = Files.shell_quote
-            local configure = "cd " .. quote(build_dir) .. " && ./configure" ..
+            assert(Files.exists(source .. "/configure"), "LuaRocks configure script not found")
+            local configure = "cd " .. quote(source) .. " && ./configure" ..
                 " --with-lua=" .. quote(path) ..
                 " --with-lua-include=" .. quote(path .. "/include") ..
                 " --with-lua-lib=" .. quote(path .. "/lib") ..
                 " --prefix=" .. quote(prefix)
             assert(Utils.is_success_status(os.execute(configure)), "LuaRocks configure failed")
             bootstrap_started = true
-            assert(Utils.is_success_status(os.execute("cd " .. quote(build_dir) .. " && make bootstrap")),
+            assert(Utils.is_success_status(os.execute("cd " .. quote(source) .. " && make bootstrap")),
                 "LuaRocks bootstrap failed")
         end)
     end
@@ -77,24 +82,14 @@ function luarocks.install(path)
     if not ok then
         print("Warning: LuaRocks installation skipped: " .. tostring(err))
     end
-    local artifacts = {}
     if Files.exists(archive) then
-        table.insert(artifacts, archive)
+        cleanup(archive)
     end
     if extract_started then
-        table.insert(artifacts, source)
-    end
-    for _, artifact in ipairs(artifacts) do
-        local removed, remove_err = pcall(Files.remove, artifact)
-        if not removed then
-            print("Warning: could not clean up " .. artifact .. ": " .. tostring(remove_err))
-        end
+        cleanup(source)
     end
     if not ok and bootstrap_started then
-        local removed, remove_err = pcall(Files.remove, prefix)
-        if not removed then
-            print("Warning: could not remove incomplete LuaRocks installation: " .. tostring(remove_err))
-        end
+        cleanup(prefix)
     end
 end
 
