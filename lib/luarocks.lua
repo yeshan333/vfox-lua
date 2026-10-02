@@ -5,6 +5,8 @@ local Files = require("files")
 local Utils = require("utils")
 
 local luarocks = {}
+-- Keep the fallback compatible with every Lua version in the E2E matrix.
+local fallback_version = "3.13.0"
 
 local function release_version()
     local resp, err = (http.try_get or http.get)({
@@ -19,8 +21,8 @@ local function release_version()
             end
         end
     end
-    print("Warning: could not resolve the latest LuaRocks release; using 3.11.1.")
-    return "3.11.1"
+    print("Warning: could not resolve the latest LuaRocks release; using " .. fallback_version .. ".")
+    return fallback_version
 end
 
 function luarocks.install(path)

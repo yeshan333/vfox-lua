@@ -95,7 +95,7 @@ mise use -g lua@5.4.7
 
 By default, the plugin will:
 
-1. Fetch the latest LuaRocks release from GitHub (fallback: 3.11.1)
+1. Fetch the latest LuaRocks release from GitHub (fallback: 3.13.0, including Lua 5.5 support)
 2. Build and bootstrap LuaRocks into `<install-dir>/luarocks/`
 3. Add `luarocks` to `PATH` and configure `LUA_INIT` so that installed rocks are immediately available
 
