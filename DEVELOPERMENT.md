@@ -34,6 +34,25 @@ through `pcall`, so its HTTP `try_get`/`try_download_file` APIs return errors di
 Optional LuaRocks extraction uses a quoted `tar` fallback on mise; vfox uses its
 native archive library. Both extract into a dedicated source directory.
 
+## Releasing the plugin
+
+After changes are merged, open **Actions → Plugin → Run workflow** on `main` and
+enter a stable plugin version without `v`, for example `1.4.0`. The shared workflow
+updates `PLUGIN.version`, creates the version commit and tag, and publishes the
+plugin ZIP and manifest in this repository using `GITHUB_TOKEN`.
+
+```shell
+gh workflow run publish.yaml --repo yeshan333/vfox-lua --ref main -f version=1.4.0
+```
+
+Pull requests run package checks only; their titles do not trigger publication.
+Existing `vX.Y.Z` tag pushes remain supported when `PLUGIN.version` matches the tag.
+If publication fails, rerun the original failed job to resume the same release.
+
+The caller follows the shared `@v1` workflows. See the
+[public release documentation](https://github.com/version-fox/plugin-manifest-action)
+for package contents, repository permissions and failure recovery.
+
 ## Lua in Windows
 
 ```powershell
