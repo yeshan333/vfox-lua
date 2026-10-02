@@ -16,12 +16,16 @@ local function base64(value)
     return table.concat(result)
 end
 
-function windows.path_expression(path)
+function windows.build(path)
     -- Encode UTF-8 paths separately so the PowerShell script itself stays ASCII.
-    return "[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('" .. base64(path) .. "'))"
-end
-
-function windows.execute(script)
+    local prefix = "[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('" .. base64(path) .. "'))"
+    local script = "$ErrorActionPreference = 'Stop'; " ..
+        "Get-Command make.exe, gcc.exe -ErrorAction Stop | Out-Null; $prefix = " .. prefix .. "; " ..
+        "Set-Location -LiteralPath $prefix; make mingw; " ..
+        "if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; " ..
+        "make install ('INSTALL_TOP=' + $prefix.Replace('\\', '/')); " ..
+        "if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; " ..
+        "Copy-Item -Path 'src\\*.dll' -Destination 'bin' -Force"
     -- GopherLua invokes cmd.exe through Go's argument quoting. Inline -Command
     -- quotes can become literals; EncodedCommand also prevents shell expansion.
     local utf16 = script:gsub(".", function(character) return character .. "\0" end)

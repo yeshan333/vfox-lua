@@ -1,40 +1,11 @@
 local http = require("http")
 
 local lua_utils = {}
-local windows_luabinaries_packages = {
-    ["5.5.0"] = {
-        archive_name = "lua-5.5.0_Win64_bin.zip",
-        relative_path = "5.5.0/Tools%20Executables/lua-5.5.0_Win64_bin.zip",
-        executable_prefix = "lua55",
-        wlua_prefix = "wlua55",
-        dll_name = "lua55.dll",
-    },
-    ["5.4.8"] = {
-        archive_name = "lua-5.4.8_Win64_bin.zip",
-        relative_path = "5.4.8/Tools%20Executables/lua-5.4.8_Win64_bin.zip",
-        executable_prefix = "lua54",
-        wlua_prefix = "wlua54",
-        dll_name = "lua54.dll",
-    },
-    ["5.3.6"] = {
-        archive_name = "lua-5.3.6_Win64_bin.zip",
-        relative_path = "5.3.6/Tools%20Executables/lua-5.3.6_Win64_bin.zip",
-        executable_prefix = "lua53",
-        wlua_prefix = "wlua53",
-        dll_name = "lua53.dll",
-    },
-    ["5.2.4"] = {
-        archive_name = "lua-5.2.4_Win64_bin.zip",
-        relative_path = "5.2.4/Tools%20Executables/lua-5.2.4_Win64_bin.zip",
-        executable_prefix = "lua52",
-        wlua_prefix = "wlua52",
-        dll_name = "lua52.dll",
-    },
-}
+local windows_luabinaries_versions = { "5.5.0", "5.4.8", "5.3.6", "5.2.4" }
 
 local versions_url = "https://fastly.jsdelivr.net/gh/yeshan333/vfox-lua@main/assets/versions.txt"
 
-local function get_releases()
+function lua_utils.get_lua_release_versions()
     -- mise exposes try_get because its Lua 5.1 async calls cannot yield through pcall.
     local resp, err = (http.try_get or http.get)({ url = versions_url })
     if err ~= nil or resp == nil then
@@ -56,12 +27,8 @@ local function get_releases()
     return result
 end
 
-function lua_utils.get_lua_release_versions()
-    return get_releases()
-end
-
 function lua_utils.get_version_info(lua_version)
-    for _, release in ipairs(get_releases()) do
+    for _, release in ipairs(lua_utils.get_lua_release_versions()) do
         if lua_version == release.version then
             return release.version, release.checksum
         end
@@ -74,39 +41,22 @@ function lua_utils.use_windows_luabinaries()
     return flag ~= nil and flag ~= "" and flag ~= "0" and string.lower(flag) ~= "false"
 end
 
-function lua_utils.get_windows_luabinaries_versions()
-    local versions = {}
-    for version, _ in pairs(windows_luabinaries_packages) do
-        table.insert(versions, version)
-    end
-    table.sort(versions, function(a, b)
-        return a > b
-    end)
-    return versions
-end
-
 function lua_utils.get_windows_luabinaries_versions_text()
-    return table.concat(lua_utils.get_windows_luabinaries_versions(), ", ")
+    return table.concat(windows_luabinaries_versions, ", ")
 end
 
 function lua_utils.get_windows_luabinaries_package(lua_version)
-    if RUNTIME.osType ~= "windows" then
-        return nil
+    for _, version in ipairs(windows_luabinaries_versions) do
+        if lua_version == version then
+            local major, minor = string.match(version, "^(%d+)%.(%d+)")
+            return {
+                suffix = major .. minor,
+                url = "https://sourceforge.net/projects/luabinaries/files/" .. version ..
+                    "/Tools%20Executables/lua-" .. version .. "_Win64_bin.zip/download?use_mirror=autoselect",
+            }
+        end
     end
-
-    local pkg_meta = windows_luabinaries_packages[lua_version]
-    if pkg_meta == nil then
-        return nil
-    end
-
-    return {
-        archive_name = pkg_meta.archive_name,
-        executable_prefix = pkg_meta.executable_prefix,
-        wlua_prefix = pkg_meta.wlua_prefix,
-        dll_name = pkg_meta.dll_name,
-        url = "https://sourceforge.net/projects/luabinaries/files/" ..
-            pkg_meta.relative_path .. "/download?use_mirror=autoselect",
-    }
+    return nil
 end
 
 function lua_utils.is_success_status(status)
