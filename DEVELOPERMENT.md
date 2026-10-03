@@ -121,3 +121,22 @@ File Type: EXECUTABLE IMAGE
         1000 .tls
         2000 .xdata
 ```
+
+## GitHub Pages
+
+The site lives in `website/`. A shared HTML template and matching Chinese/English
+message files produce `/vfox-lua/` and `/vfox-lua/en/`. Python's standard library
+builds the site; no package install, API key or remote generation is required.
+
+```shell
+python3 website/build.py --output /tmp/vfox-lua-site
+python3 -m http.server 8080 --directory /tmp/vfox-lua-site
+```
+
+Open `http://localhost:8080/` or `/en/`. The builder checks translation keys and
+reads the plugin version, minimum runtime and Windows binary versions from source.
+Use `--base-url` to set the canonical URL for another deployment.
+
+The Pages workflow validates pull requests and deploys `main`. A successful Plugin
+publication refreshes the page from the latest `main`, including the version commit
+created by the release tool. The original iFlow homepage workflow has been removed.
