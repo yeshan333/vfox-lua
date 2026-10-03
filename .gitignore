@@ -3,3 +3,5 @@
 __pycache__
 available.cache
 .vscode
+# Generated documentation site
+_site/

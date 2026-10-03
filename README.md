@@ -10,6 +10,10 @@
 
 Lua [vfox](https://github.com/version-fox) plugin. Use the vfox to manage multiple [lua](https://www.lua.org/ftp/) versions on Linux, macOS, and Windows.
 
+## Documentation
+
+[中文 / English website](https://shansan.top/vfox-lua/) · [English](https://shansan.top/vfox-lua/en/)
+
 ## Requirements
 
 - vfox 1.0.12 or newer (mise remains supported through the compatibility path)
