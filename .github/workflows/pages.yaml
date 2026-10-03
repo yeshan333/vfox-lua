@@ -10,7 +10,7 @@ on:
   workflow_run:
     workflows: ['Plugin']
     types: [completed]
-    branches: [main]
+    # Tag releases report the tag as head_branch, so do not filter to main.
 
 permissions:
   contents: read

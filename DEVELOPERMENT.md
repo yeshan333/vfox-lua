@@ -138,5 +138,5 @@ reads the plugin version, minimum runtime and Windows binary versions from sourc
 Use `--base-url` to set the canonical URL for another deployment.
 
 The Pages workflow validates pull requests and deploys `main`. A successful Plugin
-publication refreshes the page from the latest `main`, including the version commit
+publication, through a tag or manual dispatch, refreshes the page from the latest `main`, including the version commit
 created by the release tool. The original iFlow homepage workflow has been removed.
