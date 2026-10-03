@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{page_title}}</title>
   <meta name="description" content="{{description}}">
-  <meta name="theme-color" content="#f5f7f0">
+  <meta name="theme-color" content="#f7f8fc">
   <link rel="canonical" href="{{canonical}}">
   <link rel="alternate" hreflang="zh-CN" href="{{site_url}}/">
   <link rel="alternate" hreflang="en" href="{{site_url}}/en/">
@@ -14,7 +14,7 @@
   <meta property="og:title" content="{{page_title}}">
   <meta property="og:description" content="{{description}}">
   <meta property="og:url" content="{{canonical}}">
-  <link rel="icon" href="{{asset_prefix}}assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="{{asset_prefix}}assets/lua-logo.gif" type="image/gif">
   <link rel="stylesheet" href="{{asset_prefix}}assets/site.css">
   <script src="{{asset_prefix}}assets/site.js" defer></script>
 </head>
@@ -22,7 +22,7 @@
 <a class="skip-link" href="#main">{{skip}}</a>
 <header class="site-header shell">
   <a class="brand" href="./" aria-label="vfox-lua">
-    <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="14" fill="currentColor"/><circle cx="21" cy="10" r="9" fill="#f5f7f0"/><circle cx="28" cy="4" r="3" fill="currentColor"/></svg>
+    <img class="brand-mark" src="{{asset_prefix}}assets/lua-logo.gif" alt="Lua" width="128" height="128">
     <span>vfox-lua<span class="brand-caption">{{brand_caption}}</span></span>
   </a>
   <nav aria-label="{{nav_guide}}">
@@ -49,10 +49,8 @@
     </div>
     <div class="hero-visual">
       <div class="visual-topline"><span>{{visual_category}}</span><span class="release-pill">v{{version}}</span></div>
-      <div class="orbit-scene" aria-hidden="true">
-        <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
-        <div class="moon"></div><div class="satellite"></div>
-        <span class="star star-one">+</span><span class="star star-two">+</span><span class="star star-three">+</span>
+      <div class="logo-scene">
+        <a class="official-logo" href="https://www.lua.org/" aria-label="Lua.org"><img src="{{asset_prefix}}assets/lua-logo.gif" alt="Lua" width="128" height="128"></a>
         <span class="coordinate coordinate-one">01 / LUA</span><span class="coordinate coordinate-two">5.4.7</span>
       </div>
       <div class="visual-caption">{{visual_label}}</div>
@@ -122,7 +120,7 @@ vfox exec lua@5.5.0 -- lua.exe -v</code></pre></div><p class="integrity-note">{{
   </section>
   <section class="closing shell"><div><h2>{{closing_title}}</h2><p>{{closing_text}}</p></div><a class="button button-primary" href="https://github.com/yeshan333/vfox-lua">{{closing_cta}} <span aria-hidden="true">↗</span></a></section>
 </main>
-<footer class="site-footer shell"><div><strong>vfox-lua</strong><p>{{footer_text}}</p></div><div class="footer-links"><a href="https://vfox.dev/">{{footer_docs}}</a><a href="https://github.com/yeshan333/vfox-lua/releases">{{footer_release}}</a><a href="https://github.com/yeshan333/vfox-lua/blob/main/LICENSE">{{footer_license}}</a></div><span class="footer-version">v{{version}}</span></footer>
+<footer class="site-footer shell"><div><strong>vfox-lua</strong><p>{{footer_text}}</p></div><div class="footer-links"><a href="https://www.lua.org/">Lua.org</a><a href="https://vfox.dev/">{{footer_docs}}</a><a href="https://github.com/yeshan333/vfox-lua/releases">{{footer_release}}</a><a href="https://github.com/yeshan333/vfox-lua/blob/main/LICENSE">{{footer_license}}</a></div><span class="footer-version">v{{version}}</span></footer>
 <div id="copy-status" class="sr-only" role="status" aria-live="polite"></div>
 </body>
 </html>
